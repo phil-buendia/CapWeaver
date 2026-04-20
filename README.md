@@ -27,6 +27,14 @@ The current lifecycle is:
 
 `skill_search -> tool_forge -> ephemeral tool -> session tool / persistent skill / discard`
 
+This diagram reflects the latest flow in the repository:
+
+- reuse an existing skill when retrieval hits
+- forge a task-scoped tool only when retrieval misses
+- run the current task first
+- review the result afterward
+- then discard it, keep it for the current session, or promote it into a persistent skill
+
 ## Core Idea
 
 | Stage | What happens |
