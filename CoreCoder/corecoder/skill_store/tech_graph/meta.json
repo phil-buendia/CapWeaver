@@ -1,0 +1,24 @@
+{
+  "name": "tech_graph",
+  "description": "Generate production-quality SVG + PNG technical diagrams. Supports 14 diagram types (architecture, data-flow, flowchart, sequence, agent, memory, use-case, class, state-machine, er-diagram, network-topology, comparison, timeline, mind-map) and 7 visual styles. Wraps fireworks-tech-graph generator.",
+  "tags": [
+    "diagram",
+    "svg",
+    "png",
+    "architecture",
+    "flowchart",
+    "sequence",
+    "agent",
+    "memory",
+    "uml",
+    "visualization",
+    "graph",
+    "draw",
+    "technical",
+    "chart",
+    "generate"
+  ],
+  "use_count": 6,
+  "created_at": "2026-04-16T14:30:00",
+  "source": "https://github.com/yizhiyanhua-ai/fireworks-tech-graph"
+}

@@ -1,0 +1,61 @@
+{
+  "py_file_analyzer": {
+    "dir": "py_file_analyzer",
+    "description": "Analyze all Python files in a directory: count lines, functions, and classes per file using AST parsing.",
+    "tags": [
+      "analyze",
+      "python",
+      "files",
+      "directory",
+      "count",
+      "lines",
+      "functions",
+      "classes",
+      "file",
+      "parsing"
+    ],
+    "use_count": 5,
+    "created_at": "2026-04-15T19:26:02"
+  },
+  "tech_graph": {
+    "dir": "tech_graph",
+    "description": "Generate production-quality SVG + PNG technical diagrams. Supports 14 diagram types (architecture, data-flow, flowchart, sequence, agent, memory, use-case, class, state-machine, er-diagram, network-topology, comparison, timeline, mind-map) and 7 visual styles.",
+    "tags": [
+      "diagram",
+      "svg",
+      "png",
+      "architecture",
+      "flowchart",
+      "sequence",
+      "agent",
+      "memory",
+      "uml",
+      "visualization",
+      "graph",
+      "draw",
+      "technical",
+      "chart",
+      "generate"
+    ],
+    "use_count": 6,
+    "created_at": "2026-04-16T14:30:08"
+  },
+  "json_structure_analyzer": {
+    "dir": "json_structure_analyzer",
+    "description": "Analyze a JSON file and produce a structured summary report: total count of top-level keys, each key's value type (str, int, float, bool, null, object, array), for nested objects: number of sub-keys and their names, for arrays: length and element type distribution, for arrays of objects: schema hint from first element's keys. Input: file_path (str). Output: prints formatted report and returns a dict with analysis results.",
+    "tags": [
+      "analyze",
+      "json",
+      "file",
+      "produce",
+      "structured",
+      "summary",
+      "report",
+      "total",
+      "count",
+      "level"
+    ],
+    "use_count": 3,
+    "created_at": "2026-04-16T19:35:41"
+  }
+}

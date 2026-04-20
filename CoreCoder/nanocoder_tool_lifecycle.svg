@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 700" width="960" height="700">
+  <defs>
+    <marker id="arrowA" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d97757"/>
+    </marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7b8b5c"/>
+    </marker>
+    <marker id="arrowC" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8c6f5a"/>
+    </marker>
+    <marker id="arrowE" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#b45309"/>
+    </marker>
+    <marker id="arrowF" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9a6fb0"/>
+    </marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d97757"/>
+    </marker>
+    <marker id="arrowH" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8f8a80"/>
+    </marker>
+    <style>
+    text { font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+    .title { font-size: 24px; font-weight: 700; fill: #141413; }
+    .subtitle { font-size: 13px; font-weight: 500; fill: #8f8a80; }
+    .section { font-size: 13px; font-weight: 700; fill: #8b7355; letter-spacing: 1.4px; }
+    .section-sub { font-size: 12px; font-weight: 500; fill: #b4aba0; }
+    .node-title { font-size: 18px; font-weight: 700; fill: #141413; }
+    .node-sub { font-size: 12px; font-weight: 500; fill: #6b6257; }
+    .node-type { font-size: 11px; font-weight: 700; fill: #a29a8f; letter-spacing: 0.08em; }
+    .arrow-label { font-size: 12px; font-weight: 600; fill: #6b6257; }
+    .legend { font-size: 12px; font-weight: 500; fill: #6b6257; }
+    .footnote { font-size: 12px; font-weight: 500; fill: #a29a8f; }
+    </style>
+  </defs>
+  <rect width="960.0" height="700.0" fill="#f8f6f3"/>
+  <text x="48.0" y="48" text-anchor="start" class="title">NanoCoder Tool Lifecycle</text>
+  <text x="48.0" y="72" text-anchor="start" class="subtitle">From task request to persistent skill registration</text>
+  <line x1="48" y1="100" x2="912.0" y2="100" stroke="#ded8cf" stroke-width="1"/>
+  <path d="M 490.0,136.0 L 490.0,180.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 490.0,256.0 L 490.0,310.0" fill="none" stroke="#b45309" stroke-width="2.0" marker-end="url(#arrowE)"/>
+  <path d="M 580.0,348.0 L 640.0,348.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 400.0,348.0 L 340.0,348.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 250.0,386.0 L 250.0,440.0" fill="none" stroke="#7b8b5c" stroke-width="2.0" marker-end="url(#arrowB)"/>
+  <path d="M 340.0,478.0 L 400.0,498.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 730.0,386.0 L 490.0,460.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 490.0,536.0 L 490.0,580.0" fill="none" stroke="#b45309" stroke-width="2.0" marker-end="url(#arrowE)"/>
+  <path d="M 490.0,656.0 L 490.0,700.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 400.0,738.0 L 340.0,738.0" fill="none" stroke="#8f8a80" stroke-width="2.0" marker-end="url(#arrowH)"/>
+  <path d="M 580.0,738.0 L 640.0,738.0" fill="none" stroke="#7b8b5c" stroke-width="2.0" marker-end="url(#arrowB)"/>
+  <path d="M 730.0,776.0 L 730.0,840.0" fill="none" stroke="#7b8b5c" stroke-width="2.0" marker-end="url(#arrowB)"/>
+  <path d="M 730.0,840.0 L 490.0,256.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <rect x="400.0" y="60.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="490.0" y="98.0" text-anchor="middle" class="node-title">User Task
+Request</text>
+  <rect x="400.0" y="180.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="490.0" y="218.0" text-anchor="middle" class="node-title">skill_search
+(Search Skill Library)</text>
+  <rect x="400.0" y="310.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="490.0" y="348.0" text-anchor="middle" class="node-title">Skill
+Found?</text>
+  <rect x="640.0" y="310.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="730.0" y="348.0" text-anchor="middle" class="node-title">Load &amp; Register
+Matched Skill</text>
+  <rect x="160.0" y="310.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="250.0" y="348.0" text-anchor="middle" class="node-title">tool_forge
+(Generate New Tool)</text>
+  <rect x="160.0" y="440.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="250.0" y="478.0" text-anchor="middle" class="node-title">Ephemeral Skill
+(In-memory only)</text>
+  <rect x="400.0" y="460.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="490.0" y="498.0" text-anchor="middle" class="node-title">Execute Skill
+for Current Task</text>
+  <rect x="400.0" y="580.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="490.0" y="618.0" text-anchor="middle" class="node-title">Task
+Completed</text>
+  <rect x="400.0" y="700.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="490.0" y="738.0" text-anchor="middle" class="node-title">User Confirms
+Save Skill?</text>
+  <rect x="160.0" y="700.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="250.0" y="738.0" text-anchor="middle" class="node-title">Session Skill
+(Task scope only,
+then discarded)</text>
+  <rect x="640.0" y="700.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="730.0" y="738.0" text-anchor="middle" class="node-title">Persistent Skill
+(Saved to
+skill_store)</text>
+  <rect x="640.0" y="840.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="730.0" y="878.0" text-anchor="middle" class="node-title">Skill Library
+(Available for
+future tasks)</text>
+  <rect x="440.5" y="144.0" width="63" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="472.0" y="158.0" text-anchor="middle" class="arrow-label">trigger</text>
+  <rect x="419.5" y="269.0" width="105" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="472.0" y="283.0" text-anchor="middle" class="arrow-label">lookup result</text>
+  <rect x="592.0" y="318.0" width="36" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="610.0" y="332.0" text-anchor="middle" class="arrow-label">Yes</text>
+  <rect x="352.0" y="318.0" width="36" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="370.0" y="332.0" text-anchor="middle" class="arrow-label">No</text>
+  <rect x="200.5" y="399.0" width="63" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="232.0" y="413.0" text-anchor="middle" class="arrow-label">creates</text>
+  <rect x="303.5" y="474.0" width="133" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="370.0" y="488.0" text-anchor="middle" class="arrow-label">registered &amp;
+used</text>
+  <rect x="582.0" y="393.0" width="56" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="610.0" y="407.0" text-anchor="middle" class="arrow-label">invoke</text>
+  <rect x="444.0" y="544.0" width="56" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="472.0" y="558.0" text-anchor="middle" class="arrow-label">output</text>
+  <rect x="409.0" y="664.0" width="126" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="472.0" y="678.0" text-anchor="middle" class="arrow-label">post-task prompt</text>
+  <rect x="321.0" y="724.0" width="98" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="370.0" y="738.0" text-anchor="middle" class="arrow-label">No / Discard</text>
+  <rect x="568.0" y="724.0" width="84" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="610.0" y="738.0" text-anchor="middle" class="arrow-label">Yes / Save</text>
+  <rect x="631.5" y="794.0" width="161" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="712.0" y="808.0" text-anchor="middle" class="arrow-label">stored in
+skill_store</text>
+  <rect x="561.0" y="550.0" width="98" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="610.0" y="564.0" text-anchor="middle" class="arrow-label">future reuse</text>
+</svg>

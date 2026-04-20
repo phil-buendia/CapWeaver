@@ -1,0 +1,18 @@
+{
+  "name": "py_file_analyzer",
+  "description": "Analyze all Python files in a directory: count lines, functions, and classes per file using AST parsing.",
+  "tags": [
+    "analyze",
+    "python",
+    "files",
+    "directory",
+    "count",
+    "lines",
+    "functions",
+    "classes",
+    "file",
+    "parsing"
+  ],
+  "use_count": 5,
+  "created_at": "2026-04-15T19:26:02"
+}
