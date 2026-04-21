@@ -23,37 +23,78 @@ console = Console()
 _always_approved: set[str] = set()
 
 
-def _tool_retention_prompt(name: str, desc: str, code: str, source: str) -> str:
-    """Ask whether a generated tool should be discarded, kept for session, or saved."""
+def _tool_retention_prompt(
+    name: str,
+    desc: str,
+    code: str,
+    source: str,
+    recommendation: str = "session",
+    reasons: list[str] | None = None,
+) -> str:
+    """Ask whether a tool should be discarded, kept for session, or retained."""
     label = "temporary tool" if source == "forged" else "session tool"
     console.print(
         f"\n[bold yellow]Retain {label}?[/bold yellow] "
         f"[cyan]{name}[/cyan]: {desc}"
     )
+    console.print(f"[dim]Suggested: {recommendation}[/dim]")
+    if reasons:
+        console.print(f"[dim]Why: {'; '.join(reasons[:3])}[/dim]")
     console.print(
-        "[dim][s] Save as skill  [k] Keep for this session  [n] Discard[/dim]"
+        "[dim][r] Retain as persistent tool  [k] Keep for this session  [n] Discard[/dim]"
     )
     try:
-        choice = input("Choose [s/k/N] ").strip().lower()
+        choice = input("Choose [r/k/N] ").strip().lower()
     except (EOFError, KeyboardInterrupt):
         return "discard"
 
-    if choice in ("s", "skill", "save", "y", "yes"):
-        return "skill"
+    if choice in ("r", "retain", "tool", "save", "y", "yes"):
+        return "retain"
     if choice in ("k", "keep", "session"):
         return "session"
     return "discard"
 
 
-def _skill_prompt(name: str, desc: str, code: str) -> bool:
-    """Ask the user whether to save a generated skill to the library."""
+def _skill_prompt(
+    name: str,
+    desc: str,
+    code: str,
+    recommendation: str = "save_skill",
+    reasons: list[str] | None = None,
+) -> bool:
+    """Ask the user whether to save a generated workflow skill to the library."""
     console.print(
-        f"\n[bold yellow]Save as skill?[/bold yellow] "
+        f"\n[bold yellow]Save workflow as skill?[/bold yellow] "
         f"[cyan]{name}[/cyan]: {desc}"
     )
-    console.print("[dim](Saved to disk, reused in future sessions)[/dim]")
+    console.print("[dim](Saved to disk as a reusable workflow capability)[/dim]")
+    if reasons:
+        console.print(f"[dim]Why: {'; '.join(reasons[:3])}[/dim]")
     try:
-        choice = input("Save skill? [y/N] ").strip().lower()
+        choice = input("Save workflow skill? [y/N] ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        return False
+    return choice in ("y", "yes")
+
+
+def _skillification_prompt(
+    tool_name: str,
+    skill_name: str,
+    desc: str,
+    code: str,
+    recommendation: str = "skillify",
+    reasons: list[str] | None = None,
+) -> bool:
+    """Ask whether a retained tool-backed workflow should also be packaged as a skill."""
+    console.print(
+        f"\n[bold yellow]Promote retained tool into a skill?[/bold yellow] "
+        f"[cyan]{tool_name}[/cyan] -> [green]{skill_name}[/green]"
+    )
+    console.print(f"[dim]{desc}[/dim]")
+    if reasons:
+        console.print(f"[dim]Why: {'; '.join(reasons[:3])}[/dim]")
+    try:
+        choice = input("Save workflow as skill? [y/N] ").strip().lower()
     except (EOFError, KeyboardInterrupt):
         return False
     return choice in ("y", "yes")
@@ -135,6 +176,7 @@ def main():
         on_confirm=_confirm_tool,
         on_skill_prompt=_skill_prompt,
         on_tool_retention_prompt=_tool_retention_prompt,
+        on_skillification_prompt=_skillification_prompt,
     )
 
     # resume saved session
@@ -288,17 +330,49 @@ def _repl(agent: Agent, config: Config):
                     )
             continue
 
+        if user_input == "/retained":
+            from .tool_library import get_tool_library
+
+            tools = get_tool_library().list_all()
+            if not tools:
+                console.print("[dim]No retained tools saved yet.[/dim]")
+            else:
+                console.print(f"[bold]Retained tools ({len(tools)}):[/bold]")
+                for item in tools:
+                    console.print(
+                        f"  [cyan]{item['name']}[/cyan]: {item.get('description','')[:70]}  "
+                        f"[dim](used {item.get('use_count',0)}x)[/dim]"
+                    )
+            continue
+
+        if user_input == "/capstats":
+            from .capability_telemetry import get_telemetry
+
+            stats = get_telemetry().summary()
+            console.print("[bold]Capability Stats:[/bold]")
+            console.print(f"  tasks: [cyan]{stats['tasks']}[/cyan]")
+            console.print(f"  forges: [cyan]{stats['forges']}[/cyan]")
+            console.print(f"  retained tools: [cyan]{stats['retained_tools']}[/cyan]")
+            console.print(f"  session kept: [cyan]{stats['session_kept']}[/cyan]")
+            console.print(f"  discarded tools: [cyan]{stats['discarded_tools']}[/cyan]")
+            console.print(f"  saved skills: [cyan]{stats['skills_saved']}[/cyan]")
+            console.print(f"  workflow skills: [cyan]{stats['workflow_skills_saved']}[/cyan]")
+            console.print(f"  retained-tool skills: [cyan]{stats['retained_tool_skills_saved']}[/cyan]")
+            continue
+
         if user_input == "/tools":
             tools = []
             for t in agent.tools:
                 meta = agent._tool_meta.get(t.name, {})
                 source = meta.get("source", "core")
-                tools.append((t.name, source, meta.get("ephemeral", False)))
+                retention = meta.get("retention", "core")
+                tools.append((t.name, source, retention, meta.get("ephemeral", False), meta.get("skillified", False)))
 
             console.print(f"[bold]Loaded tools ({len(tools)}):[/bold]")
-            for name, source, ephemeral in sorted(tools):
+            for name, source, retention, ephemeral, skillified in sorted(tools):
                 suffix = " [dim](ephemeral)[/dim]" if ephemeral else ""
-                console.print(f"  [cyan]{name}[/cyan] - {source}{suffix}")
+                skill_tag = " [green](skillified)[/green]" if skillified else ""
+                console.print(f"  [cyan]{name}[/cyan] - {retention} / {source}{suffix}{skill_tag}")
             continue
 
         # call the agent
@@ -334,6 +408,8 @@ def _show_help():
         "  /tokens        Show token usage\n"
         "  /compact       Compress conversation context\n"
         "  /skills        List saved skills\n"
+        "  /retained      List saved retained tools\n"
+        "  /capstats      Show capability growth stats\n"
         "  /tools         List currently loaded tools\n"
         "  /diff          Show files modified this session\n"
         "  /save          Save session to disk\n"

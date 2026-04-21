@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 920" width="1280" height="920">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 980" width="1340" height="980">
   <defs>
     <marker id="arrowA" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
       <polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/>
@@ -35,62 +35,73 @@
     .footnote { font-size: 12px; font-weight: 500; fill: #9ca3af; }
     </style>
   </defs>
-  <rect width="1280.0" height="920.0" fill="#ffffff"/>
-  <text x="48.0" y="48" text-anchor="start" class="title">CapWeaver Tool Lifecycle</text>
-  <text x="48.0" y="72" text-anchor="start" class="subtitle">Search -&gt; Forge -&gt; Execute -&gt; Retain</text>
-  <line x1="48" y1="100" x2="1232.0" y2="100" stroke="#e5e7eb" stroke-width="1"/>
-  <path d="M 640.0,140.0 L 640.0,180.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 640.0,260.0 L 640.0,300.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 460.0,340.0 L 340.0,340.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 820.0,340.0 L 940.0,340.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 210.0,380.0 L 210.0,450.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 340.0,490.0 L 460.0,490.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 1070.0,380.0 L 1070.0,420.0 L 640.0,420.0 L 640.0,450.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 640.0,530.0 L 640.0,570.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 640.0,650.0 L 640.0,690.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 460.0,730.0 L 400.0,730.0 L 400.0,850.0 L 340.0,850.0" fill="none" stroke="#d1d5db" stroke-width="1.8" marker-end="url(#arrowH)" stroke-dasharray="6,4"/>
-  <path d="M 640.0,770.0 L 640.0,790.4 L 590.0,790.4 L 590.0,810.0" fill="none" stroke="#d1d5db" stroke-width="1.8" marker-end="url(#arrowH)"/>
-  <path d="M 820.0,730.0 L 880.0,730.0 L 880.0,840.0 L 940.0,840.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
-  <path d="M 590.0,810.0 L 590.0,530.0 L 640.0,530.0" fill="none" stroke="#9ca3af" stroke-width="1.8" marker-end="url(#arrowF)" stroke-dasharray="6,4"/>
-  <path d="M 1070.0,790.0 L 1070.0,740.0 L 1240.0,740.0 L 1240.0,220.0 L 820.0,220.0" fill="none" stroke="#9ca3af" stroke-width="1.8" marker-end="url(#arrowF)" stroke-dasharray="6,4"/>
-  <rect x="460.0" y="60.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="640.0" y="100.0" text-anchor="middle" class="node-title">User Task</text>
-  <text x="640.0" y="122.0" text-anchor="middle" class="node-sub">incoming request</text>
-  <rect x="460.0" y="180.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="640.0" y="220.0" text-anchor="middle" class="node-title">skill_search</text>
-  <text x="640.0" y="242.0" text-anchor="middle" class="node-sub">check reusable skills</text>
-  <rect x="460.0" y="300.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="640.0" y="340.0" text-anchor="middle" class="node-title">Skill Match?</text>
-  <text x="640.0" y="362.0" text-anchor="middle" class="node-sub">hit or miss</text>
-  <rect x="80.0" y="300.0" width="260.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="210.0" y="340.0" text-anchor="middle" class="node-title">tool_forge</text>
-  <text x="210.0" y="362.0" text-anchor="middle" class="node-sub">generate a new tool</text>
-  <rect x="940.0" y="300.0" width="260.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="1070.0" y="340.0" text-anchor="middle" class="node-title">Matched Skill</text>
-  <text x="1070.0" y="362.0" text-anchor="middle" class="node-sub">load and register</text>
-  <rect x="80.0" y="450.0" width="260.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="210.0" y="490.0" text-anchor="middle" class="node-title">Ephemeral Tool</text>
-  <text x="210.0" y="512.0" text-anchor="middle" class="node-sub">task-scoped only</text>
-  <rect x="460.0" y="450.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="640.0" y="490.0" text-anchor="middle" class="node-title">Execute Task</text>
-  <text x="640.0" y="512.0" text-anchor="middle" class="node-sub">run loaded or forged capability</text>
-  <rect x="460.0" y="570.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="640.0" y="610.0" text-anchor="middle" class="node-title">Task Completed</text>
-  <text x="640.0" y="632.0" text-anchor="middle" class="node-sub">execution finished</text>
-  <rect x="460.0" y="690.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="640.0" y="730.0" text-anchor="middle" class="node-title">Retention Review</text>
-  <text x="640.0" y="752.0" text-anchor="middle" class="node-sub">discard / session / save</text>
-  <rect x="80.0" y="810.0" width="260.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="210.0" y="850.0" text-anchor="middle" class="node-title">Discard</text>
-  <text x="210.0" y="872.0" text-anchor="middle" class="node-sub">remove temporary capability</text>
-  <rect x="460.0" y="810.0" width="260.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
-  <text x="590.0" y="850.0" text-anchor="middle" class="node-title">Session Tool</text>
-  <text x="590.0" y="872.0" text-anchor="middle" class="node-sub">reuse in this run only</text>
-  <ellipse cx="1070.0" cy="802.5" rx="65.0" ry="12.5" fill="#eefbf3" stroke="#10b981" stroke-width="2.2"/>
-  <rect x="940.0" y="802.5" width="260.0" height="75.0" fill="#eefbf3" stroke="#10b981" stroke-width="2.2"/>
-  <ellipse cx="1070.0" cy="877.5" rx="65.0" ry="12.5" fill="#eefbf3" stroke="#10b981" stroke-width="2.2"/>
-  <ellipse cx="1070.0" cy="828.0" rx="65.0" ry="12.5" fill="none" stroke="#10b981" stroke-opacity="0.45" stroke-width="1.2"/>
-  <ellipse cx="1070.0" cy="850.0" rx="65.0" ry="12.5" fill="none" stroke="#10b981" stroke-opacity="0.25" stroke-width="1.2"/>
-  <text x="1070.0" y="834.0" text-anchor="middle" class="node-title">Persistent Skill</text>
-  <text x="1070.0" y="858.0" text-anchor="middle" class="node-sub">saved to skill_store</text>
+  <rect width="1340.0" height="980.0" fill="#ffffff"/>
+  <text x="48.0" y="48" text-anchor="start" class="title">CapWeaver v0.2 Capability Lifecycle</text>
+  <text x="48.0" y="72" text-anchor="start" class="subtitle">retrieval -&gt; forge -&gt; retain -&gt; skillify</text>
+  <line x1="48" y1="100" x2="1292.0" y2="100" stroke="#e5e7eb" stroke-width="1"/>
+  <path d="M 670.0,140.0 L 670.0,160.0 L 260.0,160.0 L 260.0,180.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 670.0,140.0 L 670.0,180.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 260.0,260.0 L 260.0,300.0 L 450.0,300.0 L 450.0,385.0 L 490.0,385.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)" stroke-dasharray="6,4"/>
+  <path d="M 670.0,260.0 L 670.0,340.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)" stroke-dasharray="6,4"/>
+  <path d="M 850.0,220.0 L 940.0,220.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 1080.0,260.0 L 1080.0,320.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 940.0,360.0 L 900.0,360.0 L 850.0,385.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 670.0,430.0 L 670.0,480.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 670.0,560.0 L 670.0,610.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 490.0,655.0 L 200.0,655.0 L 200.0,760.0" fill="none" stroke="#d1d5db" stroke-width="1.8" marker-end="url(#arrowH)" stroke-dasharray="6,4"/>
+  <path d="M 670.0,700.0 L 670.0,720.4 L 530.0,739.6 L 530.0,760.0" fill="none" stroke="#d1d5db" stroke-width="1.8" marker-end="url(#arrowH)"/>
+  <path d="M 850.0,655.0 L 890.0,655.0 L 890.0,740.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 530.0,760.0 L 530.0,430.0 L 670.0,430.0" fill="none" stroke="#9ca3af" stroke-width="1.8" marker-end="url(#arrowF)" stroke-dasharray="6,4"/>
+  <path d="M 890.0,740.0 L 890.0,140.0 L 420.0,140.0 L 400.0,220.0" fill="none" stroke="#9ca3af" stroke-width="1.8" marker-end="url(#arrowF)" stroke-dasharray="6,4"/>
+  <path d="M 890.0,740.0 L 890.0,640.0 L 1090.0,640.0 L 1090.0,590.0 L 1150.0,590.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 850.0,520.0 L 990.0,520.0 L 1020.0,545.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)" stroke-dasharray="6,4"/>
+  <path d="M 1150.0,590.0 L 1150.0,640.0 L 1190.0,640.0 L 1190.0,740.0" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrowA)"/>
+  <path d="M 1190.0,740.0 L 1190.0,700.0 L 1300.0,700.0 L 1300.0,220.0 L 850.0,220.0" fill="none" stroke="#9ca3af" stroke-width="1.8" marker-end="url(#arrowF)" stroke-dasharray="6,4"/>
+  <rect x="490.0" y="60.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="670.0" y="100.0" text-anchor="middle" class="node-title">User Task</text>
+  <text x="670.0" y="122.0" text-anchor="middle" class="node-sub">incoming request</text>
+  <rect x="120.0" y="180.0" width="280.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="260.0" y="220.0" text-anchor="middle" class="node-title">tool_search</text>
+  <text x="260.0" y="242.0" text-anchor="middle" class="node-sub">check retained tools</text>
+  <rect x="490.0" y="180.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="670.0" y="220.0" text-anchor="middle" class="node-title">skill_search</text>
+  <text x="670.0" y="242.0" text-anchor="middle" class="node-sub">check workflow skills</text>
+  <rect x="940.0" y="180.0" width="280.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="1080.0" y="220.0" text-anchor="middle" class="node-title">tool_forge</text>
+  <text x="1080.0" y="242.0" text-anchor="middle" class="node-sub">generate a new tool</text>
+  <rect x="940.0" y="320.0" width="280.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="1080.0" y="360.0" text-anchor="middle" class="node-title">Ephemeral Tool</text>
+  <text x="1080.0" y="382.0" text-anchor="middle" class="node-sub">task-scoped only</text>
+  <rect x="490.0" y="340.0" width="360.0" height="90.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="670.0" y="385.0" text-anchor="middle" class="node-title">Execute Task</text>
+  <text x="670.0" y="407.0" text-anchor="middle" class="node-sub">use loaded or forged capability</text>
+  <rect x="490.0" y="480.0" width="360.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="670.0" y="520.0" text-anchor="middle" class="node-title">Task Completed</text>
+  <text x="670.0" y="542.0" text-anchor="middle" class="node-sub">execution finished</text>
+  <rect x="490.0" y="610.0" width="360.0" height="90.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="670.0" y="655.0" text-anchor="middle" class="node-title">Retention Review</text>
+  <text x="670.0" y="677.0" text-anchor="middle" class="node-sub">discard / session / retained</text>
+  <rect x="80.0" y="760.0" width="240.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="200.0" y="800.0" text-anchor="middle" class="node-title">Discard</text>
+  <text x="200.0" y="822.0" text-anchor="middle" class="node-sub">drop temporary capability</text>
+  <rect x="410.0" y="760.0" width="240.0" height="80.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="530.0" y="800.0" text-anchor="middle" class="node-title">Session Tool</text>
+  <text x="530.0" y="822.0" text-anchor="middle" class="node-sub">reuse in this run</text>
+  <ellipse cx="890.0" cy="752.5" rx="65.0" ry="12.5" fill="#eefbf3" stroke="#10b981" stroke-width="2.2"/>
+  <rect x="760.0" y="752.5" width="260.0" height="75.0" fill="#eefbf3" stroke="#10b981" stroke-width="2.2"/>
+  <ellipse cx="890.0" cy="827.5" rx="65.0" ry="12.5" fill="#eefbf3" stroke="#10b981" stroke-width="2.2"/>
+  <ellipse cx="890.0" cy="778.0" rx="65.0" ry="12.5" fill="none" stroke="#10b981" stroke-opacity="0.45" stroke-width="1.2"/>
+  <ellipse cx="890.0" cy="800.0" rx="65.0" ry="12.5" fill="none" stroke="#10b981" stroke-opacity="0.25" stroke-width="1.2"/>
+  <text x="890.0" y="784.0" text-anchor="middle" class="node-title">Retained Tool</text>
+  <text x="890.0" y="808.0" text-anchor="middle" class="node-sub">saved to tool_store</text>
+  <ellipse cx="1190.0" cy="752.5" rx="55.0" ry="12.5" fill="#eff6ff" stroke="#3b82f6" stroke-width="2.2"/>
+  <rect x="1080.0" y="752.5" width="220.0" height="75.0" fill="#eff6ff" stroke="#3b82f6" stroke-width="2.2"/>
+  <ellipse cx="1190.0" cy="827.5" rx="55.0" ry="12.5" fill="#eff6ff" stroke="#3b82f6" stroke-width="2.2"/>
+  <ellipse cx="1190.0" cy="778.0" rx="55.0" ry="12.5" fill="none" stroke="#3b82f6" stroke-opacity="0.45" stroke-width="1.2"/>
+  <ellipse cx="1190.0" cy="800.0" rx="55.0" ry="12.5" fill="none" stroke="#3b82f6" stroke-opacity="0.25" stroke-width="1.2"/>
+  <text x="1190.0" y="784.0" text-anchor="middle" class="node-title">Workflow Skill</text>
+  <text x="1190.0" y="808.0" text-anchor="middle" class="node-sub">saved to skill_store</text>
+  <rect x="1020.0" y="500.0" width="260.0" height="90.0" rx="4.0" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.8"/>
+  <text x="1150.0" y="545.0" text-anchor="middle" class="node-title">Skillification</text>
+  <text x="1150.0" y="567.0" text-anchor="middle" class="node-sub">retained-tool or workflow-first</text>
 </svg>

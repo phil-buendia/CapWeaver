@@ -3,18 +3,27 @@
 Skill system
 ------------
 - Agent maintains a per-instance tool registry (_tool_registry).
+- Retained tools and skills are separate persistence layers.
+- tool_search retrieves retained tools from tool_store/.
 - skill_search and tool_forge are always available as built-in tools.
 - Skills are lazy-loaded on demand via skill_search.
-- After each task completes, Agent scores whether the work is worth saving
-  as a skill, and if so asks the user for confirmation before persisting.
+- After each task completes, Agent first decides what to do with the tool
+  itself (discard / session / retain), then skillification can happen from
+  either:
+  1. a retained tool
+  2. a reusable workflow even when no new tool was created
 """
 
 import concurrent.futures
 from typing import Any
+from .capability_telemetry import get_telemetry
+from .retention_engine import RetentionEngine
+from .skillification_engine import SkillificationEngine
 from .llm import LLM
 from .tools import CORE_TOOLS
 from .tools.base import Tool
 from .tools.agent import AgentTool
+from .tools.tool_search import ToolSearchTool
 from .tools.skill_search import SkillSearchTool
 from .tools.tool_forge import ToolForgeTool
 from .prompt import system_prompt
@@ -35,14 +44,19 @@ class Agent:
         on_confirm=None,
         on_skill_prompt=None,
         on_tool_retention_prompt=None,
+        on_skillification_prompt=None,
     ):
         self.llm = llm
         self.max_rounds = max_rounds
         self.on_confirm = on_confirm        # (tool_name, args) -> bool
         self.on_skill_prompt = on_skill_prompt  # (name, desc, code) -> bool | None
         self.on_tool_retention_prompt = on_tool_retention_prompt  # (name, desc, code, source) -> str
+        self.on_skillification_prompt = on_skillification_prompt  # (tool_name, skill_name, desc, code) -> bool
         self.context = ContextManager(max_tokens=max_context_tokens)
         self.messages: list[dict] = []
+        self.telemetry = get_telemetry()
+        self.retention_engine = RetentionEngine()
+        self.skillification_engine = SkillificationEngine(llm)
 
         # Per-instance tool registry - keyed by name for O(1) lookup
         self._tool_registry: dict[str, Tool] = {}
@@ -53,16 +67,19 @@ class Agent:
         base_tools = tools if tools is not None else list(CORE_TOOLS)
 
         # Create per-instance skill tools (need back-ref to this agent)
+        tool_search = ToolSearchTool()
         skill_search = SkillSearchTool()
         tool_forge = ToolForgeTool()
 
-        for t in [*base_tools, skill_search, tool_forge]:
+        for t in [*base_tools, tool_search, skill_search, tool_forge]:
             self._register(t)
 
         # Wire up agent back-references
         for t in self._tool_registry.values():
             if isinstance(t, AgentTool):
                 t._parent_agent = self
+            if isinstance(t, ToolSearchTool):
+                t._agent = self
             if isinstance(t, SkillSearchTool):
                 t._agent = self
             if isinstance(t, ToolForgeTool):
@@ -80,6 +97,7 @@ class Agent:
         tool: Tool,
         *,
         source: str = "dynamic",
+        retention: str = "session",
         ephemeral: bool = False,
         code: str | None = None,
         description: str | None = None,
@@ -89,11 +107,13 @@ class Agent:
         self._register(tool)
         self._tool_meta[tool.name] = {
             "source": source,
+            "retention": retention,
             "ephemeral": ephemeral,
             "code": code,
             "description": description or getattr(tool, "description", ""),
             "task_id": task_id,
             "saved": False,
+            "skillified": False,
         }
         self._system = system_prompt(list(self._tool_registry.values()))
 
@@ -106,13 +126,22 @@ class Agent:
 
     def unregister_tool(self, name: str):
         """Remove a dynamically registered tool from the current agent."""
+        meta = self._tool_meta.get(name, {})
         if name in self._tool_registry:
             del self._tool_registry[name]
         self._tool_meta.pop(name, None)
         self._system = system_prompt(list(self._tool_registry.values()))
+        if meta.get("source") in {"forged", "session"} or meta.get("retention") == "ephemeral":
+            self.telemetry.log(
+                "tool_discarded",
+                tool_name=name,
+                source=meta.get("source", ""),
+                retention=meta.get("retention", ""),
+                description=meta.get("description", ""),
+            )
 
-    def save_tool_to_library(self, name: str) -> bool:
-        """Persist a dynamically forged tool to the skill library."""
+    def save_tool_to_retained_library(self, name: str) -> bool:
+        """Persist a tool implementation to the retained tool library."""
         meta = self._tool_meta.get(name)
         if not meta:
             return False
@@ -121,14 +150,42 @@ class Agent:
         if not code or not desc:
             return False
 
-        from .skill_library import get_library
-        lib = get_library()
+        from .tool_library import get_tool_library
+        lib = get_tool_library()
         if not lib.save(name, desc, code):
             return False
 
         meta["saved"] = True
         meta["ephemeral"] = False
-        meta["source"] = "skill"
+        meta["source"] = "retained_library"
+        meta["retention"] = "retained"
+        self.telemetry.log(
+            "tool_retained",
+            tool_name=name,
+            retention="retained",
+            source=meta.get("source"),
+            description=desc,
+        )
+        return True
+
+    def save_tool_to_skill_library(self, name: str, skill_name: str, skill_desc: str, skill_code: str) -> bool:
+        """Persist a workflow-facing skill independently of retained tool storage."""
+        from .skill_library import get_library
+
+        lib = get_library()
+        if not lib.save(skill_name, skill_desc, skill_code):
+            return False
+
+        meta = self._tool_meta.get(name)
+        if meta:
+            meta["skillified"] = True
+        self.telemetry.log(
+            "skill_saved",
+            tool_name=name,
+            skill_name=skill_name,
+            skill_source="retained_tool",
+            description=skill_desc,
+        )
         return True
 
     def retain_tool_for_session(self, name: str) -> bool:
@@ -138,6 +195,13 @@ class Agent:
             return False
         meta["ephemeral"] = False
         meta["source"] = "session"
+        meta["retention"] = "session"
+        self.telemetry.log(
+            "tool_session_kept",
+            tool_name=name,
+            retention="session",
+            description=meta.get("description", ""),
+        )
         return True
 
     def _task_forged_tools(self, task_id: int) -> list[str]:
@@ -185,8 +249,17 @@ class Agent:
                 if not resp.tool_calls:
                     self.messages.append(resp.message)
                     final_response = resp.content
+                    self.telemetry.log(
+                        "task_completed",
+                        task_id=task_id,
+                        user_query=user_input,
+                        tools_called=tools_called,
+                        tool_search_called=("tool_search" in tools_called),
+                        skill_search_called=("skill_search" in tools_called),
+                        tool_forge_called=("tool_forge" in tools_called),
+                    )
 
-                    # After task completes: evaluate whether to save as skill
+                    # After task completes: evaluate tool retention and/or workflow skillification
                     self._maybe_offer_skill(task_id, user_input, final_response, tools_called)
                     self._cleanup_task_tools(task_id)
                     self._active_task_id = None
@@ -233,7 +306,7 @@ class Agent:
     def _maybe_offer_skill(
         self, task_id: int, user_input: str, response: str, tools_called: list[str]
     ):
-        """After a task completes, score it and optionally offer to save as skill.
+        """After a task completes, handle tool retention and workflow skillification.
 
         Scoring criteria (hard rules, no LLM call needed):
           +3  used bash with non-trivial code (multi-step pipeline)
@@ -242,11 +315,14 @@ class Agent:
           +2  response contains a code block (generated reusable logic)
           +1  query contains reuse signals ('every time', 'always', 'script',
                 'automate', 'batch', 'generate', 'parse', 'convert', 'analyze')
-          -5  already used skill_search or tool_forge (skill already handled)
           -3  simple query (< 8 words and no code in response)
 
-        If score >= threshold AND on_skill_prompt is set, ask the user.
+        Workflow-first skillification is independent of retained-tool skillification:
+        a task can become a skill even if it only orchestrated existing tools or
+        did not need a new tool at all.
         """
+        workflow_skill_handled = False
+
         # Offer to retain or persist any forged tools that were actually used in this task.
         used_forged = [
             name for name in self._task_forged_tools(task_id)
@@ -261,9 +337,29 @@ class Agent:
                     continue
                 action = "discard"
                 if self.on_tool_retention_prompt is not None:
-                    action = self.on_tool_retention_prompt(name, desc, code, "forged")
-                if action == "skill":
-                    self.save_tool_to_library(name)
+                    suggestion = self.retention_engine.suggest_tool_retention(
+                        user_input=user_input,
+                        tool_name=name,
+                        description=desc,
+                        source="forged",
+                        tools_called=tools_called,
+                    )
+                    action = self.on_tool_retention_prompt(
+                        name, desc, code, "forged", suggestion.recommendation, suggestion.reasons
+                    )
+                    self.telemetry.log(
+                        "tool_retention_decision",
+                        tool_name=name,
+                        source="forged",
+                        recommended=suggestion.recommendation,
+                        chosen=action,
+                        score=suggestion.score,
+                        reasons=suggestion.reasons,
+                    )
+                if action == "retain":
+                    if self.save_tool_to_retained_library(name):
+                        self._maybe_offer_skillification(name, desc, code)
+                        workflow_skill_handled = True
                 elif action == "session":
                     self.retain_tool_for_session(name)
             return
@@ -279,53 +375,76 @@ class Agent:
                 desc = meta.get("description", "")
                 if not code or self.on_tool_retention_prompt is None:
                     continue
-                action = self.on_tool_retention_prompt(name, desc, code, "session")
-                if action == "skill":
-                    self.save_tool_to_library(name)
+                suggestion = self.retention_engine.suggest_tool_retention(
+                    user_input=user_input,
+                    tool_name=name,
+                    description=desc,
+                    source="session",
+                    tools_called=tools_called,
+                )
+                action = self.on_tool_retention_prompt(
+                    name, desc, code, "session", suggestion.recommendation, suggestion.reasons
+                )
+                self.telemetry.log(
+                    "tool_retention_decision",
+                    tool_name=name,
+                    source="session",
+                    recommended=suggestion.recommendation,
+                    chosen=action,
+                    score=suggestion.score,
+                    reasons=suggestion.reasons,
+                )
+                if action == "retain":
+                    if self.save_tool_to_retained_library(name):
+                        self._maybe_offer_skillification(name, desc, code)
+                        workflow_skill_handled = True
                 elif action == "discard":
                     self.unregister_tool(name)
+                elif action == "session":
+                    self.retain_tool_for_session(name)
+
+        used_retained_tools = [
+            name for name in set(tools_called)
+            if self._tool_meta.get(name, {}).get("retention") == "retained"
+        ]
+        if used_retained_tools:
+            for name in used_retained_tools:
+                meta = self._tool_meta.get(name, {})
+                code = meta.get("code")
+                desc = meta.get("description", "")
+                if code and not meta.get("skillified", False):
+                    self._maybe_offer_skillification(name, desc, code)
+                    workflow_skill_handled = True
 
         if self.on_skill_prompt is None:
             return
 
-        # Don't offer generic skill extraction if a skill was already searched this turn.
-        if "skill_search" in tools_called or "tool_forge" in tools_called:
+        # If a workflow already used a saved skill, don't try to extract another skill
+        # from the same run unless the caller asked through the retained-tool path.
+        if any(
+            self._tool_meta.get(name, {}).get("retention") == "skill"
+            for name in set(tools_called)
+        ):
             return
 
-        score = 0
+        workflow_suggestion = self.skillification_engine.suggest_workflow_skill(
+            user_input=user_input,
+            response=response,
+            tools_called=tools_called,
+        )
+        self.telemetry.log(
+            "workflow_skill_evaluated",
+            task_id=task_id,
+            recommended=workflow_suggestion.recommendation,
+            score=workflow_suggestion.score,
+            reasons=workflow_suggestion.reasons,
+        )
 
-        # +3 bash with non-trivial content
-        if "bash" in tools_called:
-            score += 3
+        if workflow_suggestion.recommendation != "save_skill":
+            return
 
-        # +2 produced file artifacts
-        if "write_file" in tools_called or "edit_file" in tools_called:
-            score += 2
-
-        # +2 multi-tool task
-        unique_tools = set(t for t in tools_called if t not in ("skill_search", "tool_forge"))
-        if len(unique_tools) >= 3:
-            score += 2
-
-        # +2 response contains a code block
-        if "```" in response:
-            score += 2
-
-        # +1 reuse signals in the query
-        reuse_signals = {
-            "every time", "always", "script", "automate", "batch",
-            "generate", "parse", "convert", "analyze", "extract",
-            "transform", "process", "report", "summarize",
-        }
-        query_lower = user_input.lower()
-        if any(sig in query_lower for sig in reuse_signals):
-            score += 1
-
-        # -3 trivial query with no code
-        if len(user_input.split()) < 8 and "```" not in response:
-            score -= 3
-
-        if score < _SKILL_SAVE_THRESHOLD:
+        # Avoid double prompting after a retained-tool -> skillification path already ran.
+        if workflow_skill_handled:
             return
 
         # Ask LLM to suggest a name + description for the skill
@@ -336,7 +455,17 @@ class Agent:
         name, desc, code = skill_meta
 
         # Ask the user (via callback set by CLI)
-        save = self.on_skill_prompt(name, desc, code)
+        save = self.on_skill_prompt(
+            name, desc, code, workflow_suggestion.recommendation, workflow_suggestion.reasons
+        )
+        self.telemetry.log(
+            "workflow_skill_prompted",
+            task_id=task_id,
+            skill_name=name,
+            chosen=bool(save),
+            score=workflow_suggestion.score,
+            reasons=workflow_suggestion.reasons,
+        )
         if not save:
             return
 
@@ -348,12 +477,57 @@ class Agent:
             from .skill_library import _instantiate_tool
             tool = _instantiate_tool(code)
             if tool:
-                self.register_tool(tool, source="skill")
+                self.register_tool(tool, source="skill_library", retention="skill")
+            self.telemetry.log(
+                "skill_saved",
+                task_id=task_id,
+                skill_name=name,
+                skill_source="workflow",
+                description=desc,
+            )
+
+    def _maybe_offer_skillification(self, tool_name: str, tool_desc: str, tool_code: str):
+        """Optionally package a retained tool into a workflow-facing skill."""
+        if self.on_skillification_prompt is None:
+            return
+
+        suggestion = self.skillification_engine.suggest_from_retained_tool(tool_name, tool_desc)
+        if suggestion.recommendation != "skillify":
+            return
+
+        skill_meta = self._suggest_skill_from_retained_tool(tool_name, tool_desc, tool_code)
+        if not skill_meta:
+            return
+
+        skill_name, skill_desc, skill_code = skill_meta
+        save = self.on_skillification_prompt(
+            tool_name, skill_name, skill_desc, skill_code, suggestion.recommendation, suggestion.reasons
+        )
+        self.telemetry.log(
+            "retained_tool_skill_prompted",
+            tool_name=tool_name,
+            skill_name=skill_name,
+            chosen=bool(save),
+            score=suggestion.score,
+            reasons=suggestion.reasons,
+        )
+        if not save:
+            return
+
+        self.save_tool_to_skill_library(tool_name, skill_name, skill_desc, skill_code)
+
+    def _suggest_skill_from_retained_tool(
+        self, tool_name: str, tool_desc: str, tool_code: str
+    ) -> tuple[str, str, str] | None:
+        """Wrap a retained tool as an explicit skill when the workflow is worth promoting."""
+        return self.skillification_engine.build_skill_from_retained_tool(
+            tool_name, tool_desc, tool_code
+        )
 
     def _suggest_skill_meta(
         self, user_input: str, response: str
     ) -> tuple[str, str, str] | None:
-        """Ask LLM to produce a skill name, description, and Tool class code."""
+        """Extract a workflow-facing skill even when no new tool was retained."""
         # Gather the bash commands / code blocks from recent tool results
         recent_tool_results = []
         for msg in self.messages[-20:]:
@@ -362,52 +536,9 @@ class Agent:
                 if content and len(content) < 2000:
                     recent_tool_results.append(content)
 
-        context_snippet = "\n---\n".join(recent_tool_results[-5:])
-
-        prompt = f"""\
-A user just completed this task:
-  Query: {user_input}
-  Final response summary: {response[:500]}
-  Tool outputs (recent): {context_snippet[:1000]}
-
-Your job: extract the reusable logic from this task and package it as a
-CoreCoder Tool subclass that can be saved to the skill library.
-
-Requirements:
-1. Class must inherit from Tool: `from corecoder.tools.base import Tool`
-2. Set name (snake_case), description, parameters (JSON Schema)
-3. Implement execute(**kwargs) -> str, always return a string
-4. Use only Python standard library
-5. Handle errors gracefully
-
-Return a JSON object with exactly these keys:
-{{
-  "name": "snake_case_tool_name",
-  "description": "one sentence description",
-  "code": "full python code for the Tool subclass"
-}}
-Return ONLY the JSON, no explanation.
-"""
-        try:
-            resp = self.llm.chat(
-                messages=[
-                    {"role": "system", "content": "You output only valid JSON."},
-                    {"role": "user", "content": prompt},
-                ],
-            )
-            import json, re
-            text = resp.content.strip()
-            if text.startswith("```"):
-                text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-            data = json.loads(text)
-            name = data.get("name", "").strip()
-            desc = data.get("description", "").strip()
-            code = data.get("code", "").strip()
-            if name and desc and code:
-                return name, desc, code
-        except Exception:
-            pass
-        return None
+        return self.skillification_engine.build_skill_from_workflow(
+            user_input, response, recent_tool_results
+        )
 
     # -- Tool execution --------------------------------------------------------
 

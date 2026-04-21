@@ -2,22 +2,20 @@
 
 CapWeaver is a lightweight coding agent project focused on **capability growth**.
 
-It starts from the compact architecture of [CoreCoder](https://github.com/he-yufeng/CoreCoder), and extends it with a controlled capability lifecycle:
+It starts from the compact architecture of [CoreCoder](https://github.com/he-yufeng/CoreCoder), and extends it with a more explicit capability loop:
 
-- search existing skills first
-- forge a temporary tool when needed
-- use it in the current task
-- decide whether to discard it, keep it for the current session, or promote it into a persistent skill
+- retrieve reusable retained tools or workflow skills
+- forge a new task-scoped tool only when retrieval misses
+- run the task first
+- decide whether to discard, keep for the session, retain as a persistent tool, or package the workflow as a skill
 
-Current public release: **v0.1.0**
+Current public release: **v0.2.0**
 
 ## Why This Project
 
-Most coding agents can finish a task, but they do not naturally get better at similar tasks over time. CapWeaver explores a small but practical direction:
+Most coding agents can finish a task, but they do not naturally get better at similar tasks over time. CapWeaver explores a more explicit direction:
 
-**turn one-off execution into reusable capability, under explicit control.**
-
-That is the core idea behind this repository.
+**turn one-off execution into reusable capability, under controlled retention.**
 
 ## Lifecycle
 
@@ -25,36 +23,37 @@ That is the core idea behind this repository.
 
 The current lifecycle is:
 
-`skill_search -> tool_forge -> ephemeral tool -> session tool / persistent skill / discard`
+`tool_search / skill_search -> tool_forge -> ephemeral -> session / retained -> optional skillification -> persistent skill`
 
-This diagram reflects the latest flow in the repository:
+In practice, this means:
 
-- reuse an existing skill when retrieval hits
+- reuse an existing retained tool or skill when retrieval hits
 - forge a task-scoped tool only when retrieval misses
 - run the current task first
 - review the result afterward
-- then discard it, keep it for the current session, or promote it into a persistent skill
+- then discard it, keep it for the current session, retain it as a persistent tool, or package the workflow as a reusable skill
 
 ## Core Idea
 
 | Stage | What happens |
 |---|---|
-| `skill_search` | Try to reuse an existing skill first |
+| `tool_search / skill_search` | Reuse a retained tool or workflow skill first |
 | `tool_forge` | Generate a new tool only when retrieval misses |
-| `ephemeral tool` | Register the tool for the current task |
-| `session tool` | Keep it available during the current running session |
-| `persistent skill` | Save it into `skill_store` for reuse across sessions |
+| `ephemeral` | Register the tool for the current task |
+| `session` | Keep it available during the current running session |
+| `retained` | Save the executable tool into `tool_store` |
+| `skillification` | Package a retained tool or reusable workflow as a skill |
+| `persistent skill` | Save the workflow capability into `skill_store` |
 
-## CapWeaver vs CoreCoder
+## What Changed in v0.2
 
-| Aspect | CoreCoder | CapWeaver |
+| Area | v0.1 | v0.2 |
 |---|---|---|
-| Project goal | Minimal coding agent blueprint | Capability-aware coding agent prototype |
-| Tool system | Mostly static tool set | Dynamic runtime tool registration |
-| Reuse path | Manual / fixed | Retrieval before generation |
-| New capability creation | Not the main focus | `tool_forge` can generate tools on demand |
-| Post-task handling | No capability lifecycle | `ephemeral -> session -> skill` |
-| Skill persistence | Limited | Controlled retention and protected `skill_store` |
+| Persistence | Mainly `session -> skill` | `session -> retained` and optional `skillification` |
+| Reuse search | Skill-centric | Separate `tool_search` and `skill_search` |
+| Skill creation | Mostly tool-backed | Tool-backed and workflow-first |
+| Visibility | Basic lifecycle | Capability telemetry and stats |
+| Runtime commands | `/tools`, `/skills` | `/tools`, `/retained`, `/skills`, `/capstats` |
 
 ## Repository Structure
 
@@ -95,7 +94,9 @@ python -m corecoder -m your-model-name
 ```text
 /help       Show help
 /tools      List currently loaded tools
+/retained   List saved retained tools
 /skills     List saved skills
+/capstats   Show capability growth stats
 /save       Save conversation history
 /sessions   List saved sessions
 /reset      Reset current conversation
@@ -107,10 +108,12 @@ This project is **based on and inspired by** [CoreCoder](https://github.com/he-y
 
 CapWeaver keeps the compact agent skeleton from CoreCoder and builds additional mechanisms for:
 
-- skill retrieval
+- retained-tool retrieval
+- workflow skill retrieval
 - runtime tool forging
 - capability retention
-- protected skill persistence
+- workflow skillification
+- protected persistence
 
 If you are interested in the original minimal architecture, please also read:
 
@@ -119,10 +122,11 @@ If you are interested in the original minimal architecture, please also read:
 
 ## Notes
 
-- `session tool` only lives in the current running process.
+- `session` tools only live in the current running process.
+- retained tools and workflow skills are stored separately.
 - `/save` currently saves conversation history, not in-memory session tools.
-- The runtime package name and CLI entry remain `corecoder` for compatibility with the upstream code structure.
+- The runtime package name and CLI entry remain `corecoder` for compatibility with the upstream structure.
 
 ## License
 
-MIT.
+MIT

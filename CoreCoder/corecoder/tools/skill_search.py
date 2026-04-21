@@ -77,7 +77,12 @@ class SkillSearchTool(Tool):
             if self._agent is not None:
                 tool = lib.load(skill_name)
                 if tool:
-                    self._agent.register_tool(tool)
+                    self._agent.register_tool(
+                        tool,
+                        source="skill_library",
+                        retention="skill",
+                        description=desc,
+                    )
                     lib.increment_use(skill_name)
                     lines.append(
                         f"  [loaded] {skill_name}: {desc}  (used {use_count + 1}x)"

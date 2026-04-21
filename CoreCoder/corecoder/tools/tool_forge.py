@@ -2,11 +2,12 @@
 
 Workflow:
   1. Agent decides a task needs a reusable tool
-  2. Agent calls skill_search first - if nothing matches, calls tool_forge
+  2. Agent calls tool_search / skill_search first - if nothing matches, calls tool_forge
   3. tool_forge asks the LLM to generate a Tool subclass
   4. Validates the code (syntax + instantiation)
   5. Hot-registers into the running agent as an ephemeral tool
-  6. Task finishes, then the user can choose whether to persist it as a skill
+  6. Task finishes, then the user can choose whether to discard it, keep it
+     in-session, retain it as a persistent tool, and optionally package a skill
 """
 
 import re
@@ -48,10 +49,12 @@ class WordCountTool(Tool):
 class ToolForgeTool(Tool):
     name = "tool_forge"
     description = (
-        "Generate a new reusable tool (skill) on demand. "
-        "Call skill_search FIRST. Only call this when no existing skill matches. "
+        "Generate a new reusable tool on demand. "
+        "Call tool_search and/or skill_search FIRST. Only call this when no existing "
+        "retained tool or skill matches. "
         "The generated tool is registered for the current task immediately. "
-        "It is only saved to the skill library if the user confirms after the task."
+        "After the task, the user can decide whether to discard it, keep it in the "
+        "session, retain it as a persistent tool, or further package it as a skill."
     )
     parameters = {
         "type": "object",
@@ -114,10 +117,17 @@ class ToolForgeTool(Tool):
         self._agent.register_tool(
             instance,
             source="forged",
+            retention="ephemeral",
             ephemeral=True,
             code=code,
             description=description,
             task_id=self._agent._active_task_id,
+        )
+        self._agent.telemetry.log(
+            "tool_forged",
+            task_id=self._agent._active_task_id,
+            tool_name=tool_name,
+            description=description,
         )
 
         return (

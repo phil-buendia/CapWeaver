@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "corecoder"
-version = "0.1.0"
-description = "NanoCoder: a lightweight coding agent with skill retrieval, tool forging, and controlled skill retention."
+version = "0.2.0"
+description = "CapWeaver: a lightweight coding agent with tool retrieval, skill retrieval, capability retention, and workflow skillification."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

@@ -1,0 +1,153 @@
+{
+  "style": 4,
+  "width": 1340,
+  "height": 980,
+  "viewBox": "0 0 1340 980",
+  "title": "CapWeaver v0.2 Capability Lifecycle",
+  "subtitle": "retrieval -> forge -> retain -> skillify",
+  "nodes": [
+    {
+      "id": "task",
+      "x": 490,
+      "y": 60,
+      "width": 360,
+      "height": 80,
+      "label": "User Task",
+      "sublabel": "incoming request"
+    },
+    {
+      "id": "tool_search",
+      "x": 120,
+      "y": 180,
+      "width": 280,
+      "height": 80,
+      "label": "tool_search",
+      "sublabel": "check retained tools"
+    },
+    {
+      "id": "skill_search",
+      "x": 490,
+      "y": 180,
+      "width": 360,
+      "height": 80,
+      "label": "skill_search",
+      "sublabel": "check workflow skills"
+    },
+    {
+      "id": "forge",
+      "x": 940,
+      "y": 180,
+      "width": 280,
+      "height": 80,
+      "label": "tool_forge",
+      "sublabel": "generate a new tool"
+    },
+    {
+      "id": "ephemeral",
+      "x": 940,
+      "y": 320,
+      "width": 280,
+      "height": 80,
+      "label": "Ephemeral Tool",
+      "sublabel": "task-scoped only"
+    },
+    {
+      "id": "execute",
+      "x": 490,
+      "y": 340,
+      "width": 360,
+      "height": 90,
+      "label": "Execute Task",
+      "sublabel": "use loaded or forged capability"
+    },
+    {
+      "id": "completed",
+      "x": 490,
+      "y": 480,
+      "width": 360,
+      "height": 80,
+      "label": "Task Completed",
+      "sublabel": "execution finished"
+    },
+    {
+      "id": "review",
+      "x": 490,
+      "y": 610,
+      "width": 360,
+      "height": 90,
+      "label": "Retention Review",
+      "sublabel": "discard / session / retained"
+    },
+    {
+      "id": "discard",
+      "x": 80,
+      "y": 760,
+      "width": 240,
+      "height": 80,
+      "label": "Discard",
+      "sublabel": "drop temporary capability"
+    },
+    {
+      "id": "session",
+      "x": 410,
+      "y": 760,
+      "width": 240,
+      "height": 80,
+      "label": "Session Tool",
+      "sublabel": "reuse in this run"
+    },
+    {
+      "id": "retained",
+      "kind": "cylinder",
+      "x": 760,
+      "y": 740,
+      "width": 260,
+      "height": 100,
+      "label": "Retained Tool",
+      "sublabel": "saved to tool_store",
+      "fill": "#eefbf3",
+      "stroke": "#10b981"
+    },
+    {
+      "id": "workflow_skill",
+      "kind": "cylinder",
+      "x": 1080,
+      "y": 740,
+      "width": 220,
+      "height": 100,
+      "label": "Workflow Skill",
+      "sublabel": "saved to skill_store",
+      "fill": "#eff6ff",
+      "stroke": "#3b82f6"
+    },
+    {
+      "id": "skillify",
+      "x": 1020,
+      "y": 500,
+      "width": 260,
+      "height": 90,
+      "label": "Skillification",
+      "sublabel": "retained-tool or workflow-first"
+    }
+  ],
+  "arrows": [
+    {"source": "task", "target": "tool_search", "source_port": "bottom", "target_port": "top", "route_points": [[670, 160], [260, 160]], "flow": "control"},
+    {"source": "task", "target": "skill_search", "source_port": "bottom", "target_port": "top", "flow": "control"},
+    {"source": "tool_search", "target": "execute", "source_port": "bottom", "target_port": "left", "route_points": [[260, 300], [450, 300], [450, 385]], "flow": "read", "dashed": true},
+    {"source": "skill_search", "target": "execute", "source_port": "bottom", "target_port": "top", "route_points": [[670, 300]], "flow": "read", "dashed": true},
+    {"source": "skill_search", "target": "forge", "source_port": "right", "target_port": "left", "route_points": [[900, 220]], "flow": "data"},
+    {"source": "forge", "target": "ephemeral", "source_port": "bottom", "target_port": "top", "route_points": [[1080, 290]], "flow": "write"},
+    {"source": "ephemeral", "target": "execute", "source_port": "left", "target_port": "right", "route_points": [[900, 360]], "flow": "write"},
+    {"source": "execute", "target": "completed", "source_port": "bottom", "target_port": "top", "flow": "control"},
+    {"source": "completed", "target": "review", "source_port": "bottom", "target_port": "top", "flow": "control"},
+    {"source": "review", "target": "discard", "source_port": "left", "target_port": "top", "route_points": [[440, 655], [200, 655], [200, 740]], "flow": "neutral", "dashed": true},
+    {"source": "review", "target": "session", "source_port": "bottom", "target_port": "top", "flow": "neutral"},
+    {"source": "review", "target": "retained", "source_port": "right", "target_port": "top", "route_points": [[900, 655], [890, 655], [890, 740]], "flow": "write"},
+    {"source": "session", "target": "execute", "source_port": "top", "target_port": "bottom", "route_points": [[530, 720], [530, 430]], "flow": "feedback", "dashed": true},
+    {"source": "retained", "target": "tool_search", "source_port": "top", "target_port": "right", "route_points": [[890, 700], [890, 140], [420, 140], [400, 220]], "flow": "feedback", "dashed": true},
+    {"source": "retained", "target": "skillify", "source_port": "top", "target_port": "bottom", "route_points": [[890, 700], [890, 640], [1090, 640], [1090, 590]], "flow": "control"},
+    {"source": "completed", "target": "skillify", "source_port": "right", "target_port": "left", "route_points": [[900, 520], [990, 520]], "flow": "control", "dashed": true},
+    {"source": "skillify", "target": "workflow_skill", "source_port": "bottom", "target_port": "top", "route_points": [[1150, 640], [1190, 640], [1190, 740]], "flow": "write"},
+    {"source": "workflow_skill", "target": "skill_search", "source_port": "top", "target_port": "right", "route_points": [[1190, 700], [1300, 700], [1300, 220], [850, 220]], "flow": "feedback", "dashed": true}
+  ]
+}
