@@ -4,20 +4,25 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 
-EVENTS_DIR = Path.home() / ".corecoder"
+EVENTS_DIR = Path(os.getenv("CORECODER_HOME", Path.home() / ".corecoder"))
 EVENTS_FILE = EVENTS_DIR / "capability_events.jsonl"
 
 
 class CapabilityTelemetry:
     def __init__(self, file_path: Path | None = None):
         self.file_path = file_path or EVENTS_FILE
-        self.file_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            self.file_path = Path.cwd() / ".corecoder" / "capability_events.jsonl"
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def log(self, event_type: str, **payload: Any):
         event = {
@@ -25,8 +30,14 @@ class CapabilityTelemetry:
             "event_type": event_type,
             **payload,
         }
-        with self.file_path.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(event, ensure_ascii=False) + "\n")
+        try:
+            with self.file_path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(event, ensure_ascii=False) + "\n")
+        except PermissionError:
+            self.file_path = Path.cwd() / ".corecoder" / "capability_events.jsonl"
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+            with self.file_path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(event, ensure_ascii=False) + "\n")
 
     def summary(self) -> dict[str, Any]:
         if not self.file_path.exists():
@@ -40,6 +51,7 @@ class CapabilityTelemetry:
                 "skills_saved": 0,
                 "workflow_skills_saved": 0,
                 "retained_tool_skills_saved": 0,
+                "skill_revisions": 0,
             }
 
         counters = Counter()
@@ -78,6 +90,7 @@ class CapabilityTelemetry:
             "skills_saved": len(skill_names),
             "workflow_skills_saved": counters["workflow_skills_saved"],
             "retained_tool_skills_saved": counters["retained_tool_skills_saved"],
+            "skill_revisions": counters["skill_revised"],
         }
 
 

@@ -9,7 +9,7 @@ It starts from the compact architecture of [CoreCoder](https://github.com/he-yuf
 - run the task first
 - decide whether to discard, keep for the session, retain as a persistent tool, or package the workflow as a skill
 
-Current public release: **v0.2.0**
+Current public release: **v0.3.0**
 
 ## Why This Project
 
@@ -23,7 +23,7 @@ Most coding agents can finish a task, but they do not naturally get better at si
 
 The current lifecycle is:
 
-`tool_search / skill_search -> tool_forge -> ephemeral -> session / retained -> optional skillification -> persistent skill`
+`tool_search / skill_search -> tool_forge -> ephemeral -> session / retained -> skillification -> trajectory-driven revision`
 
 In practice, this means:
 
@@ -31,7 +31,7 @@ In practice, this means:
 - forge a task-scoped tool only when retrieval misses
 - run the current task first
 - review the result afterward
-- then discard it, keep it for the current session, retain it as a persistent tool, or package the workflow as a reusable skill
+- then discard it, keep it for the current session, retain it as a persistent tool, package the workflow as a reusable skill, or update an existing skill from the recorded trajectory
 
 ## Core Idea
 
@@ -44,6 +44,16 @@ In practice, this means:
 | `retained` | Save the executable tool into `tool_store` |
 | `skillification` | Package a retained tool or reusable workflow as a skill |
 | `persistent skill` | Save the workflow capability into `skill_store` |
+| `trajectory revision` | Record execution traces and append learning notes to used skills |
+
+## What Changed in v0.3
+
+| Area | v0.2 | v0.3 |
+|---|---|---|
+| Memory granularity | Event telemetry | Event telemetry + per-task trajectory JSONL |
+| Skill lifecycle | Create/save reusable skills | Create/save plus update existing skill notes |
+| Learning signal | Retention and skillification prompts | Post-run self-review from errors, corrections, and edge cases |
+| Commands | `/capstats` | `/capstats`, `/trajectories` |
 
 ## What Changed in v0.2
 
@@ -97,6 +107,7 @@ python -m corecoder -m your-model-name
 /retained   List saved retained tools
 /skills     List saved skills
 /capstats   Show capability growth stats
+/trajectories List recent task trajectory files
 /save       Save conversation history
 /sessions   List saved sessions
 /reset      Reset current conversation
@@ -124,6 +135,8 @@ If you are interested in the original minimal architecture, please also read:
 
 - `session` tools only live in the current running process.
 - retained tools and workflow skills are stored separately.
+- task trajectories are stored under `~/.corecoder/trajectories/`.
+- capability events are stored under `~/.corecoder/capability_events.jsonl`.
 - `/save` currently saves conversation history, not in-memory session tools.
 - The runtime package name and CLI entry remain `corecoder` for compatibility with the upstream structure.
 

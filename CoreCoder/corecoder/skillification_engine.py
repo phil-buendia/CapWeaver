@@ -52,6 +52,69 @@ class SkillificationEngine:
             return SkillificationSuggestion("skillify", score, reasons or ["workflow looks reusable"])
         return SkillificationSuggestion("skip", score, reasons or ["not enough workflow signal"])
 
+    def suggest_skill_revision(
+        self,
+        *,
+        skill_name: str,
+        user_input: str,
+        response: str,
+        tools_called: list[str],
+        tool_errors: list[str],
+    ) -> SkillificationSuggestion:
+        """Decide whether a used skill should receive an evolution note."""
+        score = 0
+        reasons: list[str] = []
+        text = f"{user_input}\n{response}".lower()
+
+        if tool_errors:
+            score += 4
+            reasons.append("skill run produced tool errors or denied calls")
+        if any(token in text for token in ("fix", "修复", "不对", "错误", "失败", "边界", "edge case", "better", "更好")):
+            score += 3
+            reasons.append("task contains correction or edge-case signal")
+        if len(set(tools_called)) >= 3:
+            score += 1
+            reasons.append("skill was part of a multi-step execution path")
+
+        if score >= 3:
+            return SkillificationSuggestion("revise_skill", score, reasons)
+        return SkillificationSuggestion("skip", score, reasons or [f"no revision signal for {skill_name}"])
+
+    def build_skill_revision_note(
+        self,
+        *,
+        skill_name: str,
+        user_input: str,
+        response: str,
+        trajectory_excerpt: str,
+    ) -> str | None:
+        prompt = f"""\
+You are maintaining a reusable agent skill.
+
+Skill name: {skill_name}
+User request: {user_input}
+Final response: {response[:800]}
+Trajectory excerpt:
+{trajectory_excerpt[:1500]}
+
+Write one concise revision note that captures what the skill should remember
+next time. Focus on edge cases, better ordering, validation checks, or user
+preference. Do NOT write code. Return plain text only, one or two sentences.
+"""
+        try:
+            resp = self.llm.chat(
+                messages=[
+                    {"role": "system", "content": "You write concise skill maintenance notes."},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            note = resp.content.strip()
+            if note.startswith("```"):
+                note = note.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+            return note[:1000] if note else None
+        except Exception:
+            return None
+
     def build_skill_from_retained_tool(
         self, tool_name: str, tool_desc: str, tool_code: str
     ) -> tuple[str, str, str] | None:

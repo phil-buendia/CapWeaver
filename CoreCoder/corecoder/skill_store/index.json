@@ -14,7 +14,7 @@
       "file",
       "parsing"
     ],
-    "use_count": 6,
+    "use_count": 7,
     "created_at": "2026-04-15T19:26:02"
   },
   "tech_graph": {
@@ -37,7 +37,7 @@
       "chart",
       "generate"
     ],
-    "use_count": 7,
+    "use_count": 8,
     "created_at": "2026-04-16T14:30:08"
   },
   "json_structure_analyzer": {
@@ -55,7 +55,7 @@
       "count",
       "level"
     ],
-    "use_count": 4,
+    "use_count": 5,
     "created_at": "2026-04-16T19:35:41"
   },
   "json_codebase_schema_auditor": {

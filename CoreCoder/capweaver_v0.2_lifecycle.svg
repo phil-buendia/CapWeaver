@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 700" width="960" height="700">
+  <defs>
+    <marker id="arrowA" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d97757"/>
+    </marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7b8b5c"/>
+    </marker>
+    <marker id="arrowC" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8c6f5a"/>
+    </marker>
+    <marker id="arrowE" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#b45309"/>
+    </marker>
+    <marker id="arrowF" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9a6fb0"/>
+    </marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d97757"/>
+    </marker>
+    <marker id="arrowH" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8f8a80"/>
+    </marker>
+    <style>
+    text { font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+    .title { font-size: 24px; font-weight: 700; fill: #141413; }
+    .subtitle { font-size: 13px; font-weight: 500; fill: #8f8a80; }
+    .section { font-size: 13px; font-weight: 700; fill: #8b7355; letter-spacing: 1.4px; }
+    .section-sub { font-size: 12px; font-weight: 500; fill: #b4aba0; }
+    .node-title { font-size: 18px; font-weight: 700; fill: #141413; }
+    .node-sub { font-size: 12px; font-weight: 500; fill: #6b6257; }
+    .node-type { font-size: 11px; font-weight: 700; fill: #a29a8f; letter-spacing: 0.08em; }
+    .arrow-label { font-size: 12px; font-weight: 600; fill: #6b6257; }
+    .legend { font-size: 12px; font-weight: 500; fill: #6b6257; }
+    .footnote { font-size: 12px; font-weight: 500; fill: #a29a8f; }
+    </style>
+  </defs>
+  <rect width="960.0" height="700.0" fill="#f8f6f3"/>
+  <text x="48.0" y="48" text-anchor="start" class="title">CapWeaver v0.2 — Capability Lifecycle</text>
+  <text x="48.0" y="72" text-anchor="start" class="subtitle">From task request to retained tool &amp; workflow skill</text>
+  <line x1="48" y1="100" x2="912.0" y2="100" stroke="#ded8cf" stroke-width="1"/>
+  <path d="M 570.0,136.0 L 330.0,180.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 570.0,136.0 L 810.0,180.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 330.0,256.0 L 570.0,300.0" fill="none" stroke="#b45309" stroke-width="2.0" marker-end="url(#arrowE)"/>
+  <path d="M 810.0,256.0 L 570.0,300.0" fill="none" stroke="#b45309" stroke-width="2.0" marker-end="url(#arrowE)"/>
+  <path d="M 660.0,338.0 L 760.0,338.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 570.0,376.0 L 570.0,420.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 850.0,376.0 L 570.0,540.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 570.0,496.0 L 570.0,540.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 570.0,616.0 L 570.0,660.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 480.0,698.0 L 420.0,698.0" fill="none" stroke="#8f8a80" stroke-width="2.0" marker-end="url(#arrowH)"/>
+  <path d="M 570.0,736.0 L 330.0,780.0" fill="none" stroke="#7b8b5c" stroke-width="2.0" marker-end="url(#arrowB)"/>
+  <path d="M 570.0,736.0 L 570.0,780.0" fill="none" stroke="#7b8b5c" stroke-width="2.0" marker-end="url(#arrowB)"/>
+  <path d="M 660.0,818.0 L 720.0,818.0" fill="none" stroke="#7b8b5c" stroke-width="2.0" marker-end="url(#arrowB)"/>
+  <path d="M 330.0,780.0 L 216.0,780.0 L 216.0,256.0 L 330.0,256.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <path d="M 810.0,780.0 L 736.0,780.0 L 736.0,256.0 L 810.0,256.0" fill="none" stroke="#d97757" stroke-width="2.0" marker-end="url(#arrowA)"/>
+  <rect x="480.0" y="60.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="570.0" y="98.0" text-anchor="middle" class="node-title">User Task
+Request</text>
+  <rect x="240.0" y="180.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="330.0" y="218.0" text-anchor="middle" class="node-title">tool_search
+(retained tool library)</text>
+  <rect x="720.0" y="180.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="810.0" y="218.0" text-anchor="middle" class="node-title">skill_search
+(skill library)</text>
+  <rect x="480.0" y="300.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="570.0" y="338.0" text-anchor="middle" class="node-title">Tool / Skill
+Found?</text>
+  <rect x="760.0" y="300.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="850.0" y="338.0" text-anchor="middle" class="node-title">Use Existing
+Capability</text>
+  <rect x="480.0" y="420.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="570.0" y="458.0" text-anchor="middle" class="node-title">tool_forge
+(generate new tool)</text>
+  <rect x="480.0" y="540.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="570.0" y="578.0" text-anchor="middle" class="node-title">Execute &amp;
+Verify Task</text>
+  <rect x="480.0" y="660.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="570.0" y="698.0" text-anchor="middle" class="node-title">Retention Decision
+discard / session / retain</text>
+  <rect x="240.0" y="780.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="330.0" y="818.0" text-anchor="middle" class="node-title">Retained Tool
+(tool_store)</text>
+  <rect x="480.0" y="780.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="570.0" y="818.0" text-anchor="middle" class="node-title">Skillification
+(package workflow)</text>
+  <rect x="720.0" y="780.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="810.0" y="818.0" text-anchor="middle" class="node-title">Workflow Skill
+(skill_store)</text>
+  <rect x="240.0" y="660.0" width="180.0" height="76.0" rx="10.0" fill="#fffcf7" stroke="#d9d0c3" stroke-width="1.8"/>
+  <text x="330.0" y="698.0" text-anchor="middle" class="node-title">Discard
+(session only)</text>
+  <rect x="401.0" y="144.0" width="98" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="450.0" y="158.0" text-anchor="middle" class="arrow-label">search tools</text>
+  <rect x="637.5" y="144.0" width="105" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="690.0" y="158.0" text-anchor="middle" class="arrow-label">search skills</text>
+  <rect x="418.5" y="264.0" width="63" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="450.0" y="278.0" text-anchor="middle" class="arrow-label">results</text>
+  <rect x="658.5" y="264.0" width="63" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="690.0" y="278.0" text-anchor="middle" class="arrow-label">results</text>
+  <rect x="692.0" y="308.0" width="36" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="710.0" y="322.0" text-anchor="middle" class="arrow-label">Yes</text>
+  <rect x="534.0" y="384.0" width="36" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="552.0" y="398.0" text-anchor="middle" class="arrow-label">No</text>
+  <rect x="496.0" y="504.0" width="112" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="552.0" y="518.0" text-anchor="middle" class="arrow-label">new tool ready</text>
+  <rect x="513.5" y="624.0" width="77" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="552.0" y="638.0" text-anchor="middle" class="arrow-label">task done</text>
+  <rect x="418.5" y="684.0" width="63" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="450.0" y="698.0" text-anchor="middle" class="arrow-label">discard</text>
+  <rect x="422.0" y="744.0" width="56" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="450.0" y="758.0" text-anchor="middle" class="arrow-label">retain</text>
+  <rect x="517.0" y="744.0" width="70" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="552.0" y="758.0" text-anchor="middle" class="arrow-label">skillify</text>
+  <rect x="648.0" y="804.0" width="84" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="690.0" y="818.0" text-anchor="middle" class="arrow-label">save skill</text>
+  <rect x="149.0" y="504.0" width="98" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="198.0" y="518.0" text-anchor="middle" class="arrow-label">future reuse</text>
+  <rect x="669.0" y="504.0" width="98" height="20" rx="6" fill="#f8f6f3" opacity="0.96"/>
+  <text x="718.0" y="518.0" text-anchor="middle" class="arrow-label">future reuse</text>
+</svg>

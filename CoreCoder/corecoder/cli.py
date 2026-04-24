@@ -100,6 +100,26 @@ def _skillification_prompt(
     return choice in ("y", "yes")
 
 
+def _skill_revision_prompt(
+    skill_name: str,
+    note: str,
+    reasons: list[str] | None = None,
+) -> bool:
+    """Ask whether to append a trajectory-derived note to an existing skill."""
+    console.print(
+        f"\n[bold yellow]Update existing skill memory?[/bold yellow] "
+        f"[cyan]{skill_name}[/cyan]"
+    )
+    if reasons:
+        console.print(f"[dim]Why: {'; '.join(reasons[:3])}[/dim]")
+    console.print(f"[dim]Proposed note: {note}[/dim]")
+    try:
+        choice = input("Append revision note? [y/N] ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        return False
+    return choice in ("y", "yes")
+
+
 def _confirm_tool(name: str, args: dict) -> bool:
     """Ask the user to approve a tool execution. Returns True if approved."""
     if name in _always_approved:
@@ -177,6 +197,7 @@ def main():
         on_skill_prompt=_skill_prompt,
         on_tool_retention_prompt=_tool_retention_prompt,
         on_skillification_prompt=_skillification_prompt,
+        on_skill_revision_prompt=_skill_revision_prompt,
     )
 
     # resume saved session
@@ -358,6 +379,23 @@ def _repl(agent: Agent, config: Config):
             console.print(f"  saved skills: [cyan]{stats['skills_saved']}[/cyan]")
             console.print(f"  workflow skills: [cyan]{stats['workflow_skills_saved']}[/cyan]")
             console.print(f"  retained-tool skills: [cyan]{stats['retained_tool_skills_saved']}[/cyan]")
+            console.print(f"  skill revisions: [cyan]{stats.get('skill_revisions', 0)}[/cyan]")
+            continue
+
+        if user_input == "/trajectories":
+            from .trajectory_recorder import list_trajectories
+
+            trajectories = list_trajectories()
+            if not trajectories:
+                console.print("[dim]No trajectories recorded yet.[/dim]")
+            else:
+                console.print(f"[bold]Recent trajectories ({len(trajectories)}):[/bold]")
+                for item in trajectories:
+                    console.print(
+                        f"  [cyan]{item['name']}[/cyan]  "
+                        f"[dim]{item['size']} bytes, {item['modified']}[/dim]\n"
+                        f"    [dim]{item['path']}[/dim]"
+                    )
             continue
 
         if user_input == "/tools":
@@ -410,6 +448,7 @@ def _show_help():
         "  /skills        List saved skills\n"
         "  /retained      List saved retained tools\n"
         "  /capstats      Show capability growth stats\n"
+        "  /trajectories  List recent task trajectory JSONL files\n"
         "  /tools         List currently loaded tools\n"
         "  /diff          Show files modified this session\n"
         "  /save          Save session to disk\n"

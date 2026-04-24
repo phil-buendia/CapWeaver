@@ -1,5 +1,6 @@
 .env
 .venv/
+.corecoder/
 __pycache__/
 *.py[cod]
 *.egg-info/

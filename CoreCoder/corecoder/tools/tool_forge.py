@@ -133,7 +133,8 @@ class ToolForgeTool(Tool):
         return (
             f"Tool '{tool_name}' created, validated, and registered for this task. "
             f"It is available immediately. If it proves useful, the user can choose "
-            f"to save it as a skill after the task completes."
+            f"to keep it for the session, retain it as a persistent tool, or package "
+            f"the surrounding workflow as a skill after the task completes."
         )
 
     def _generate_code(

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Skill Library - persistent storage and retrieval of dynamically generated tools.
+"""Skill Library - persistent storage and retrieval of reusable skills.
 
-Skills are Tool subclasses generated at runtime and saved to disk.
+Skills are saved as executable Tool subclasses plus optional procedural notes.
 They are NOT loaded into the agent's context by default - the agent must
 explicitly search for and load them via SkillSearchTool.
 
@@ -10,6 +10,7 @@ Directory layout:
   +-- index.json                  # global index: name -> metadata
   +-- py_file_analyzer/
   |   +-- skill.py                # generated Tool class source
+  |   +-- SKILL.md                # human-readable workflow memory / notes
   |   +-- meta.json               # per-skill metadata (description, tags, ...)
   +-- csv_analyzer/
       +-- skill.py
@@ -57,7 +58,14 @@ class SkillLibrary:
 
     # ---- Save ----------------------------------------------------------------
 
-    def save(self, name: str, description: str, code: str, tags: list[str] | None = None) -> bool:
+    def save(
+        self,
+        name: str,
+        description: str,
+        code: str,
+        tags: list[str] | None = None,
+        procedural_doc: str | None = None,
+    ) -> bool:
         """Persist a generated tool to disk under skill_store/<name>/. Returns True on success."""
         try:
             skill_dir = self.dir / name
@@ -65,6 +73,10 @@ class SkillLibrary:
 
             # Write source code
             (skill_dir / "skill.py").write_text(code, encoding="utf-8")
+            (skill_dir / "SKILL.md").write_text(
+                procedural_doc or _default_skill_doc(name, description),
+                encoding="utf-8",
+            )
 
             # Write per-skill meta.json
             meta = {
@@ -72,6 +84,7 @@ class SkillLibrary:
                 "description": description,
                 "tags": tags or _extract_tags(description),
                 "use_count": 0,
+                "revision_count": 0,
                 "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
             }
             (skill_dir / "meta.json").write_text(
@@ -85,9 +98,56 @@ class SkillLibrary:
                 "description": description,
                 "tags": meta["tags"],
                 "use_count": 0,
+                "revision_count": 0,
                 "created_at": meta["created_at"],
             }
             self._save_index(index)
+            return True
+        except Exception:
+            return False
+
+    def append_revision_note(
+        self,
+        name: str,
+        note: str,
+        *,
+        task_id: int | None = None,
+        trajectory_path: str | None = None,
+    ) -> bool:
+        """Append a lightweight evolution note to SKILL.md and update counters."""
+        index = self._load_index()
+        if name not in index:
+            return False
+        try:
+            skill_dir = self.dir / index[name]["dir"]
+            doc_path = skill_dir / "SKILL.md"
+            if not doc_path.exists():
+                doc_path.write_text(
+                    _default_skill_doc(name, index[name].get("description", "")),
+                    encoding="utf-8",
+                )
+
+            stamp = time.strftime("%Y-%m-%dT%H:%M:%S")
+            details = [f"- {note.strip()}"]
+            if task_id is not None:
+                details.append(f"- Source task: {task_id}")
+            if trajectory_path:
+                details.append(f"- Trajectory: `{trajectory_path}`")
+            block = "\n\n## Revision Notes\n" if "## Revision Notes" not in doc_path.read_text(encoding="utf-8") else "\n"
+            block += f"\n### {stamp}\n" + "\n".join(details) + "\n"
+            with doc_path.open("a", encoding="utf-8") as f:
+                f.write(block)
+
+            index[name]["revision_count"] = index[name].get("revision_count", 0) + 1
+            index[name]["updated_at"] = stamp
+            self._save_index(index)
+
+            meta_path = skill_dir / "meta.json"
+            if meta_path.exists():
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                meta["revision_count"] = meta.get("revision_count", 0) + 1
+                meta["updated_at"] = stamp
+                meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
             return True
         except Exception:
             return False
@@ -261,6 +321,28 @@ def _extract_tags(description: str) -> list[str]:
             seen.add(tl)
             tags.append(tl)
     return tags[:10]
+
+
+def _default_skill_doc(name: str, description: str) -> str:
+    return f"""# {name}
+
+## Purpose
+{description}
+
+## When To Use
+- Use this skill when the task matches the purpose above.
+
+## Workflow
+- Load the skill through `skill_search`.
+- Execute the registered tool with the required inputs.
+- Review the output and handle edge cases explicitly.
+
+## Verification
+- Check that the returned result is a string.
+- Check that errors are reported clearly instead of raising exceptions.
+
+## Revision Notes
+"""
 
 
 def _instantiate_tool(code: str) -> "Tool | None":

@@ -19,6 +19,7 @@ from typing import Any
 from .capability_telemetry import get_telemetry
 from .retention_engine import RetentionEngine
 from .skillification_engine import SkillificationEngine
+from .trajectory_recorder import TrajectoryRecorder
 from .llm import LLM
 from .tools import CORE_TOOLS
 from .tools.base import Tool
@@ -45,6 +46,7 @@ class Agent:
         on_skill_prompt=None,
         on_tool_retention_prompt=None,
         on_skillification_prompt=None,
+        on_skill_revision_prompt=None,
     ):
         self.llm = llm
         self.max_rounds = max_rounds
@@ -52,6 +54,7 @@ class Agent:
         self.on_skill_prompt = on_skill_prompt  # (name, desc, code) -> bool | None
         self.on_tool_retention_prompt = on_tool_retention_prompt  # (name, desc, code, source) -> str
         self.on_skillification_prompt = on_skillification_prompt  # (tool_name, skill_name, desc, code) -> bool
+        self.on_skill_revision_prompt = on_skill_revision_prompt  # (skill_name, note, reasons) -> bool
         self.context = ContextManager(max_tokens=max_context_tokens)
         self.messages: list[dict] = []
         self.telemetry = get_telemetry()
@@ -232,11 +235,14 @@ class Agent:
         task_id = self._task_seq
         self._active_task_id = task_id
         cleaned = False
+        trajectory = TrajectoryRecorder(task_id)
         self.messages.append({"role": "user", "content": user_input})
+        trajectory.record("user_message", content=user_input)
         self.context.maybe_compress(self.messages, self.llm)
 
         # Track which tools were actually called this turn
         tools_called: list[str] = []
+        tool_errors: list[str] = []
 
         try:
             for _ in range(self.max_rounds):
@@ -249,6 +255,7 @@ class Agent:
                 if not resp.tool_calls:
                     self.messages.append(resp.message)
                     final_response = resp.content
+                    trajectory.record("assistant_final", content=final_response)
                     self.telemetry.log(
                         "task_completed",
                         task_id=task_id,
@@ -257,17 +264,34 @@ class Agent:
                         tool_search_called=("tool_search" in tools_called),
                         skill_search_called=("skill_search" in tools_called),
                         tool_forge_called=("tool_forge" in tools_called),
+                        trajectory_path=str(trajectory.path),
                     )
 
                     # After task completes: evaluate tool retention and/or workflow skillification
                     self._maybe_offer_skill(task_id, user_input, final_response, tools_called)
+                    self._maybe_offer_skill_revision(
+                        task_id,
+                        user_input,
+                        final_response,
+                        tools_called,
+                        tool_errors,
+                        str(trajectory.path),
+                    )
                     self._cleanup_task_tools(task_id)
                     self._active_task_id = None
+                    trajectory.close("completed")
                     cleaned = True
 
                     return final_response
 
                 self.messages.append(resp.message)
+                trajectory.record(
+                    "assistant_tool_plan",
+                    tool_calls=[
+                        {"name": tc.name, "arguments": tc.arguments}
+                        for tc in resp.tool_calls
+                    ],
+                )
 
                 if len(resp.tool_calls) == 1:
                     tc = resp.tool_calls[0]
@@ -275,6 +299,15 @@ class Agent:
                     if on_tool:
                         on_tool(tc.name, tc.arguments)
                     result = self._exec_tool(tc)
+                    if _looks_like_tool_error(result):
+                        tool_errors.append(f"{tc.name}: {result[:300]}")
+                    trajectory.record(
+                        "tool_result",
+                        tool_name=tc.name,
+                        arguments=tc.arguments,
+                        result=result[:4000],
+                        is_error=_looks_like_tool_error(result),
+                    )
                     self.messages.append({
                         "role": "tool",
                         "tool_call_id": tc.id,
@@ -284,6 +317,15 @@ class Agent:
                     results = self._exec_tools_parallel(resp.tool_calls, on_tool)
                     for tc, result in zip(resp.tool_calls, results):
                         tools_called.append(tc.name)
+                        if _looks_like_tool_error(result):
+                            tool_errors.append(f"{tc.name}: {result[:300]}")
+                        trajectory.record(
+                            "tool_result",
+                            tool_name=tc.name,
+                            arguments=tc.arguments,
+                            result=result[:4000],
+                            is_error=_looks_like_tool_error(result),
+                        )
                         self.messages.append({
                             "role": "tool",
                             "tool_call_id": tc.id,
@@ -294,12 +336,14 @@ class Agent:
 
             self._cleanup_task_tools(task_id)
             self._active_task_id = None
+            trajectory.close("max_rounds")
             cleaned = True
             return "(reached maximum tool-call rounds)"
         finally:
             if not cleaned:
                 self._cleanup_task_tools(task_id)
                 self._active_task_id = None
+                trajectory.close("interrupted")
 
     # -- Skill save offer ------------------------------------------------------
 
@@ -362,7 +406,6 @@ class Agent:
                         workflow_skill_handled = True
                 elif action == "session":
                     self.retain_tool_for_session(name)
-            return
 
         used_session_tools = [
             name for name in set(tools_called)
@@ -516,6 +559,90 @@ class Agent:
 
         self.save_tool_to_skill_library(tool_name, skill_name, skill_desc, skill_code)
 
+    def _maybe_offer_skill_revision(
+        self,
+        task_id: int,
+        user_input: str,
+        response: str,
+        tools_called: list[str],
+        tool_errors: list[str],
+        trajectory_path: str,
+    ):
+        """Let used skills accumulate lightweight revision notes from trajectories."""
+        if self.on_skill_revision_prompt is None:
+            return
+
+        used_skills = [
+            name for name in set(tools_called)
+            if self._tool_meta.get(name, {}).get("retention") == "skill"
+        ]
+        if not used_skills:
+            return
+
+        trajectory_excerpt = "\n".join(
+            msg.get("content", "")[:500]
+            for msg in self.messages[-12:]
+            if msg.get("role") in {"user", "tool", "assistant"}
+        )
+
+        for skill_name in used_skills:
+            suggestion = self.skillification_engine.suggest_skill_revision(
+                skill_name=skill_name,
+                user_input=user_input,
+                response=response,
+                tools_called=tools_called,
+                tool_errors=tool_errors,
+            )
+            self.telemetry.log(
+                "skill_revision_evaluated",
+                task_id=task_id,
+                skill_name=skill_name,
+                recommended=suggestion.recommendation,
+                score=suggestion.score,
+                reasons=suggestion.reasons,
+                trajectory_path=trajectory_path,
+            )
+            if suggestion.recommendation != "revise_skill":
+                continue
+
+            note = self.skillification_engine.build_skill_revision_note(
+                skill_name=skill_name,
+                user_input=user_input,
+                response=response,
+                trajectory_excerpt=trajectory_excerpt,
+            )
+            if not note:
+                continue
+
+            save = self.on_skill_revision_prompt(skill_name, note, suggestion.reasons)
+            self.telemetry.log(
+                "skill_revision_prompted",
+                task_id=task_id,
+                skill_name=skill_name,
+                chosen=bool(save),
+                score=suggestion.score,
+                reasons=suggestion.reasons,
+                trajectory_path=trajectory_path,
+            )
+            if not save:
+                continue
+
+            from .skill_library import get_library
+
+            if get_library().append_revision_note(
+                skill_name,
+                note,
+                task_id=task_id,
+                trajectory_path=trajectory_path,
+            ):
+                self.telemetry.log(
+                    "skill_revised",
+                    task_id=task_id,
+                    skill_name=skill_name,
+                    note=note,
+                    trajectory_path=trajectory_path,
+                )
+
     def _suggest_skill_from_retained_tool(
         self, tool_name: str, tool_desc: str, tool_code: str
     ) -> tuple[str, str, str] | None:
@@ -594,3 +721,8 @@ class Agent:
             if meta.get("ephemeral", False):
                 self.unregister_tool(name)
         self._active_task_id = None
+
+
+def _looks_like_tool_error(result: str) -> bool:
+    text = (result or "").strip().lower()
+    return text.startswith("error") or "error executing" in text or "user denied" in text
