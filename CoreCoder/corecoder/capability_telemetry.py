@@ -4,14 +4,14 @@
 from __future__ import annotations
 
 import json
-import os
 import time
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from .storage import corecoder_home
 
-EVENTS_DIR = Path(os.getenv("CORECODER_HOME", Path.home() / ".corecoder"))
+EVENTS_DIR = corecoder_home()
 EVENTS_FILE = EVENTS_DIR / "capability_events.jsonl"
 
 

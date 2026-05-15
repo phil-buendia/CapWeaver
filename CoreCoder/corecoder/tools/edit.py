@@ -58,7 +58,7 @@ class EditFileTool(Tool):
             if not p.exists():
                 return f"Error: {file_path} not found"
 
-            content = p.read_text()
+            content = p.read_text(encoding="utf-8")
             occurrences = content.count(old_string)
 
             if occurrences == 0:
@@ -74,12 +74,13 @@ class EditFileTool(Tool):
                 )
 
             new_content = content.replace(old_string, new_string, 1)
-            p.write_text(new_content)
+            p.write_text(new_content, encoding="utf-8")
             _changed_files.add(str(p))
 
             # generate a unified diff so the user/LLM can see exactly what changed
             diff = _unified_diff(content, new_content, str(p))
-            return f"Edited {file_path}\n{diff}"
+            validation = _validation_message(p)
+            return f"Edited {file_path}{validation}\n{diff}"
         except Exception as e:
             return f"Error: {e}"
 
@@ -98,3 +99,14 @@ def _unified_diff(old: str, new: str, filename: str, context: int = 3) -> str:
     if len(result) > 3000:
         result = result[:2500] + "\n... (diff truncated)\n"
     return result
+
+
+def _validation_message(path: Path) -> str:
+    from ..capability_validator import validate_path
+
+    result = validate_path(path)
+    if result.kind == "unsupported":
+        return ""
+    if result.ok:
+        return f"\nValidation: {result.message}"
+    return f"\nValidation failed ({result.kind}): {result.message}"

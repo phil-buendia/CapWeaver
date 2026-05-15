@@ -7,6 +7,8 @@ from pathlib import Path
 
 def _load_dotenv():
     """Load .env from cwd, walking up to home dir. No-op if python-dotenv missing."""
+    if os.getenv("CORECODER_SKIP_DOTENV"):
+        return
     try:
         from dotenv import load_dotenv
         # search cwd first, then parent dirs up to ~

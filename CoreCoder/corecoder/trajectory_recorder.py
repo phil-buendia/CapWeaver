@@ -8,14 +8,13 @@ step-by-step evidence needed to later create or improve reusable skills.
 from __future__ import annotations
 
 import json
-import os
 import time
 from pathlib import Path
 from typing import Any
 
+from .storage import corecoder_home
 
-DEFAULT_CORECODER_HOME = Path(os.getenv("CORECODER_HOME", Path.home() / ".corecoder"))
-TRAJECTORY_DIR = DEFAULT_CORECODER_HOME / "trajectories"
+TRAJECTORY_DIR = corecoder_home() / "trajectories"
 
 
 class TrajectoryRecorder:

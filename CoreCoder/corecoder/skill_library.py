@@ -22,6 +22,7 @@ from __future__ import annotations
 import ast
 import json
 import re
+import shutil
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -68,6 +69,12 @@ class SkillLibrary:
     ) -> bool:
         """Persist a generated tool to disk under skill_store/<name>/. Returns True on success."""
         try:
+            from .capability_validator import validate_python_source, validate_path
+
+            code_check = validate_python_source(code)
+            if not code_check.ok:
+                return False
+
             skill_dir = self.dir / name
             skill_dir.mkdir(parents=True, exist_ok=True)
 
@@ -90,6 +97,10 @@ class SkillLibrary:
             (skill_dir / "meta.json").write_text(
                 json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"
             )
+            for path in (skill_dir / "skill.py", skill_dir / "meta.json"):
+                check = validate_path(path)
+                if not check.ok:
+                    return False
 
             # Update global index
             index = self._load_index()
@@ -102,6 +113,9 @@ class SkillLibrary:
                 "created_at": meta["created_at"],
             }
             self._save_index(index)
+            index_check = validate_path(self._index_path)
+            if not index_check.ok:
+                return False
             return True
         except Exception:
             return False
@@ -284,6 +298,35 @@ class SkillLibrary:
 
     def exists(self, name: str) -> bool:
         return name in self._load_index()
+
+    def archive(self, name: str) -> bool:
+        """Move a skill out of the active index without deleting its files."""
+        index = self._load_index()
+        if name not in index:
+            return False
+        try:
+            stamp = time.strftime("%Y%m%d_%H%M%S")
+            src = self.dir / index[name]["dir"]
+            archive_root = self.dir / "_archived"
+            archive_root.mkdir(parents=True, exist_ok=True)
+            dst = archive_root / f"{name}_{stamp}"
+            if src.exists():
+                shutil.move(str(src), str(dst))
+            archived_meta = dict(index[name])
+            archived_meta["archived_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            archived_meta["archive_dir"] = str(dst)
+            del index[name]
+            self._save_index(index)
+            archive_index = archive_root / "index.json"
+            try:
+                archived = json.loads(archive_index.read_text(encoding="utf-8"))
+            except Exception:
+                archived = {}
+            archived[name] = archived_meta
+            archive_index.write_text(json.dumps(archived, indent=2, ensure_ascii=False), encoding="utf-8")
+            return True
+        except Exception:
+            return False
 
 
 # ---- Helpers -----------------------------------------------------------------

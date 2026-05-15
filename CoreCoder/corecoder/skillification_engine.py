@@ -49,7 +49,7 @@ class SkillificationEngine:
             reasons.append("response includes reusable logic")
 
         if score >= 4:
-            return SkillificationSuggestion("skillify", score, reasons or ["workflow looks reusable"])
+            return SkillificationSuggestion("save_skill", score, reasons or ["workflow looks reusable"])
         return SkillificationSuggestion("skip", score, reasons or ["not enough workflow signal"])
 
     def suggest_skill_revision(

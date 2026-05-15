@@ -66,6 +66,7 @@ class Agent:
         self._tool_meta: dict[str, dict[str, Any]] = {}
         self._task_seq = 0
         self._active_task_id: int | None = None
+        self._goal: str | None = None
 
         base_tools = tools if tools is not None else list(CORE_TOOLS)
 
@@ -223,7 +224,14 @@ class Agent:
     # -- Message helpers -------------------------------------------------------
 
     def _full_messages(self) -> list[dict]:
-        return [{"role": "system", "content": self._system}] + self.messages
+        system = self._system
+        if self._goal:
+            system += (
+                "\n\n## Persistent Goal\n"
+                "Keep this goal in mind across turns unless the user changes or clears it:\n"
+                f"{self._goal}\n"
+            )
+        return [{"role": "system", "content": system}] + self.messages
 
     def _tool_schemas(self) -> list[dict]:
         return [t.schema() for t in self._tool_registry.values()]
@@ -239,6 +247,8 @@ class Agent:
         self.messages.append({"role": "user", "content": user_input})
         trajectory.record("user_message", content=user_input)
         self.context.maybe_compress(self.messages, self.llm)
+        if self._goal:
+            trajectory.record("persistent_goal", content=self._goal)
 
         # Track which tools were actually called this turn
         tools_called: list[str] = []
@@ -721,6 +731,9 @@ class Agent:
             if meta.get("ephemeral", False):
                 self.unregister_tool(name)
         self._active_task_id = None
+
+    def set_goal(self, goal: str | None):
+        self._goal = goal.strip() if goal and goal.strip() else None
 
 
 def _looks_like_tool_error(result: str) -> bool:

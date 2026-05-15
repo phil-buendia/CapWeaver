@@ -6,12 +6,12 @@ import tempfile
 
 from corecoder import Agent, LLM, Config, ALL_TOOLS, __version__
 from corecoder.context import ContextManager, estimate_tokens
-from corecoder.session import save_session, load_session, list_sessions
+from corecoder.session import save_session, load_session, list_sessions, _sessions_dir
 from corecoder.tools import get_tool
 
 
 def test_version():
-    assert __version__ == "0.2.0"
+    assert __version__ == "0.4.0"
 
 
 def test_public_api_exports():
@@ -32,15 +32,17 @@ def test_config_from_env():
 def test_config_defaults():
     # temporarily clear relevant env vars
     saved = {}
-    for k in ["CORECODER_MODEL", "CORECODER_MAX_TOKENS"]:
+    for k in ["CORECODER_MODEL", "CORECODER_MAX_TOKENS", "CORECODER_SKIP_DOTENV"]:
         if k in os.environ:
             saved[k] = os.environ.pop(k)
 
+    os.environ["CORECODER_SKIP_DOTENV"] = "1"
     c = Config.from_env()
     assert c.model == "gpt-4o"
     assert c.max_tokens == 4096
     assert c.temperature == 0.0
 
+    os.environ.pop("CORECODER_SKIP_DOTENV", None)
     os.environ.update(saved)
 
 
@@ -87,7 +89,7 @@ def test_session_save_load():
     assert loaded[0] == msgs
     assert loaded[1] == "test-model"
     # cleanup
-    pathlib.Path.home().joinpath(".corecoder/sessions/pytest_test_session.json").unlink()
+    _sessions_dir().joinpath("pytest_test_session.json").unlink(missing_ok=True)
 
 
 def test_session_not_found():
@@ -129,9 +131,10 @@ def test_edit_tracks_changed_files():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write("aaa\nbbb\n")
         f.flush()
-        edit.execute(file_path=f.name, old_string="aaa", new_string="zzz")
-        assert any(f.name in p for p in _changed_files)
-        os.unlink(f.name)
+        path = f.name
+    edit.execute(file_path=path, old_string="aaa", new_string="zzz")
+    assert any(path in p for p in _changed_files)
+    os.unlink(path)
     _changed_files.clear()
 
 

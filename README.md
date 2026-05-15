@@ -7,9 +7,9 @@ It starts from the compact architecture of [CoreCoder](https://github.com/he-yuf
 - retrieve reusable retained tools or workflow skills
 - forge a new task-scoped tool only when retrieval misses
 - run the task first
-- decide whether to discard, keep for the session, retain as a persistent tool, or package the workflow as a skill
+- decide whether to discard, keep for the session, retain as a persistent tool, package the workflow as a skill, or curate the capability library
 
-Current public release: **v0.3.0**
+Current public release: **v0.4.0**
 
 ## Why This Project
 
@@ -23,7 +23,7 @@ Most coding agents can finish a task, but they do not naturally get better at si
 
 The current lifecycle is:
 
-`tool_search / skill_search -> tool_forge -> ephemeral -> session / retained -> skillification -> trajectory-driven revision`
+`goal -> tool_search / skill_search -> tool_forge -> retention -> skillification -> trajectory revision -> curator`
 
 In practice, this means:
 
@@ -31,7 +31,7 @@ In practice, this means:
 - forge a task-scoped tool only when retrieval misses
 - run the current task first
 - review the result afterward
-- then discard it, keep it for the current session, retain it as a persistent tool, package the workflow as a reusable skill, or update an existing skill from the recorded trajectory
+- then discard it, keep it for the current session, retain it as a persistent tool, package the workflow as a reusable skill, update an existing skill from the recorded trajectory, or let the curator flag capabilities for improvement/archive
 
 ## Core Idea
 
@@ -45,6 +45,17 @@ In practice, this means:
 | `skillification` | Package a retained tool or reusable workflow as a skill |
 | `persistent skill` | Save the workflow capability into `skill_store` |
 | `trajectory revision` | Record execution traces and append learning notes to used skills |
+| `curator` | Review tools and skills with a rubric and produce governance reports |
+
+## What Changed in v0.4
+
+| Area | v0.3 | v0.4 |
+|---|---|---|
+| Long-task focus | Trajectory records | Persistent `/goal` for cross-turn direction |
+| Capability governance | Manual inspection | Rubric-based `/curator` report |
+| Library hygiene | Active libraries only | Explicit `/archive-skill` and `/archive-tool` |
+| Write safety | Runtime validation in generation paths | Post-write validation for Python, JSON, TOML, and YAML shape |
+| Skill/tool quality | Create and revise | Score, improve, archive, or skillify candidates |
 
 ## What Changed in v0.3
 
@@ -108,6 +119,10 @@ python -m corecoder -m your-model-name
 /skills     List saved skills
 /capstats   Show capability growth stats
 /trajectories List recent task trajectory files
+/goal       Show/set/clear persistent goal
+/curator    Review capability library with rubric
+/archive-skill <name> Archive a skill
+/archive-tool <name>  Archive a retained tool
 /save       Save conversation history
 /sessions   List saved sessions
 /reset      Reset current conversation
@@ -137,6 +152,7 @@ If you are interested in the original minimal architecture, please also read:
 - retained tools and workflow skills are stored separately.
 - task trajectories are stored under `~/.corecoder/trajectories/`.
 - capability events are stored under `~/.corecoder/capability_events.jsonl`.
+- curator reports are stored under `~/.corecoder/curator/`.
 - `/save` currently saves conversation history, not in-memory session tools.
 - The runtime package name and CLI entry remain `corecoder` for compatibility with the upstream structure.
 

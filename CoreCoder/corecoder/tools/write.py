@@ -42,9 +42,21 @@ class WriteFileTool(Tool):
                     "through the controlled skill persistence flow."
                 )
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(content)
+            p.write_text(content, encoding="utf-8")
             _changed_files.add(str(p))
             n_lines = content.count("\n") + (1 if content and not content.endswith("\n") else 0)
-            return f"Wrote {n_lines} lines to {file_path}"
+            validation = _validation_message(p)
+            return f"Wrote {n_lines} lines to {file_path}{validation}"
         except Exception as e:
             return f"Error: {e}"
+
+
+def _validation_message(path: Path) -> str:
+    from ..capability_validator import validate_path
+
+    result = validate_path(path)
+    if result.kind == "unsupported":
+        return ""
+    if result.ok:
+        return f"\nValidation: {result.message}"
+    return f"\nValidation failed ({result.kind}): {result.message}"

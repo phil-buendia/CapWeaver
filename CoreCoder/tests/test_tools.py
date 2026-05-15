@@ -1,6 +1,7 @@
 """Tests for the tool system."""
 
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -38,7 +39,7 @@ def test_bash_exit_code():
 
 def test_bash_timeout():
     bash = get_tool("bash")
-    r = bash.execute(command="sleep 10", timeout=1)
+    r = bash.execute(command=f'"{sys.executable}" -c "import time; time.sleep(10)"', timeout=1)
     assert "timed out" in r
 
 
@@ -62,7 +63,7 @@ def test_bash_blocks_curl_pipe():
 
 def test_bash_truncates_long_output():
     bash = get_tool("bash")
-    r = bash.execute(command="python3 -c \"print('x' * 20000)\"")
+    r = bash.execute(command=f'"{sys.executable}" -c "print(\'x\' * 20000)"')
     assert "truncated" in r
 
 
@@ -73,10 +74,11 @@ def test_read_file():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
         f.write("line1\nline2\nline3\n")
         f.flush()
-        r = read.execute(file_path=f.name)
-        assert "line1" in r
-        assert "line2" in r
-        os.unlink(f.name)
+        path = f.name
+    r = read.execute(file_path=path)
+    assert "line1" in r
+    assert "line2" in r
+    os.unlink(path)
 
 
 def test_read_file_not_found():
@@ -90,9 +92,10 @@ def test_read_file_offset_limit():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
         f.write("\n".join(f"line{i}" for i in range(100)))
         f.flush()
-        r = read.execute(file_path=f.name, offset=10, limit=5)
-        assert "line10" not in r or "line9" in r  # offset is 1-based
-        os.unlink(f.name)
+        path = f.name
+    r = read.execute(file_path=path, offset=10, limit=5)
+    assert "line10" not in r or "line9" in r  # offset is 1-based
+    os.unlink(path)
 
 
 # --- write_file ---
@@ -124,13 +127,14 @@ def test_edit_file_basic():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write("def foo():\n    return 42\n")
         f.flush()
-        r = edit.execute(file_path=f.name, old_string="return 42", new_string="return 99")
-        assert "Edited" in r
-        assert "---" in r  # unified diff
-        content = Path(f.name).read_text()
-        assert "return 99" in content
-        assert "return 42" not in content
-        os.unlink(f.name)
+        path = f.name
+    r = edit.execute(file_path=path, old_string="return 42", new_string="return 99")
+    assert "Edited" in r
+    assert "---" in r  # unified diff
+    content = Path(path).read_text()
+    assert "return 99" in content
+    assert "return 42" not in content
+    os.unlink(path)
 
 
 def test_edit_file_not_found_string():
@@ -138,9 +142,10 @@ def test_edit_file_not_found_string():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write("hello\n")
         f.flush()
-        r = edit.execute(file_path=f.name, old_string="NONEXISTENT", new_string="x")
-        assert "not found" in r.lower()
-        os.unlink(f.name)
+        path = f.name
+    r = edit.execute(file_path=path, old_string="NONEXISTENT", new_string="x")
+    assert "not found" in r.lower()
+    os.unlink(path)
 
 
 def test_edit_file_duplicate_string():
@@ -148,9 +153,10 @@ def test_edit_file_duplicate_string():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write("dup\ndup\n")
         f.flush()
-        r = edit.execute(file_path=f.name, old_string="dup", new_string="x")
-        assert "2 times" in r
-        os.unlink(f.name)
+        path = f.name
+    r = edit.execute(file_path=path, old_string="dup", new_string="x")
+    assert "2 times" in r
+    os.unlink(path)
 
 
 # --- glob ---

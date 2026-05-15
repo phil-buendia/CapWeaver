@@ -5,16 +5,20 @@ CoreCoder distills this to: JSON dump of messages + model config.
 """
 
 import json
-import os
 import time
 from pathlib import Path
 
-SESSIONS_DIR = Path.home() / ".corecoder" / "sessions"
+from .storage import corecoder_home
+
+
+def _sessions_dir() -> Path:
+    return corecoder_home() / "sessions"
 
 
 def save_session(messages: list[dict], model: str, session_id: str | None = None) -> str:
     """Save conversation to disk. Returns the session ID."""
-    SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+    sessions_dir = _sessions_dir()
+    sessions_dir.mkdir(parents=True, exist_ok=True)
 
     if not session_id:
         session_id = f"session_{int(time.time())}"
@@ -26,14 +30,14 @@ def save_session(messages: list[dict], model: str, session_id: str | None = None
         "messages": messages,
     }
 
-    path = SESSIONS_DIR / f"{session_id}.json"
+    path = sessions_dir / f"{session_id}.json"
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return session_id
 
 
 def load_session(session_id: str) -> tuple[list[dict], str] | None:
     """Load a saved session. Returns (messages, model) or None."""
-    path = SESSIONS_DIR / f"{session_id}.json"
+    path = _sessions_dir() / f"{session_id}.json"
     if not path.exists():
         return None
 
@@ -43,11 +47,12 @@ def load_session(session_id: str) -> tuple[list[dict], str] | None:
 
 def list_sessions() -> list[dict]:
     """List available sessions, newest first."""
-    if not SESSIONS_DIR.exists():
+    sessions_dir = _sessions_dir()
+    if not sessions_dir.exists():
         return []
 
     sessions = []
-    for f in sorted(SESSIONS_DIR.glob("*.json"), reverse=True):
+    for f in sorted(sessions_dir.glob("*.json"), reverse=True):
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
             # grab first user message as preview

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "corecoder"
-version = "0.3.0"
-description = "CapWeaver: a lightweight coding agent with trajectory-driven capability retention and skill evolution."
+version = "0.4.0"
+description = "CapWeaver: a lightweight coding agent with trajectory-driven capability retention, skill evolution, and capability curation."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

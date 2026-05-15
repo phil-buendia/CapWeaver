@@ -15,6 +15,7 @@ from .agent import Agent
 from .llm import LLM
 from .config import Config
 from .session import save_session, load_session, list_sessions
+from .goal_manager import GoalManager
 from . import __version__
 
 console = Console()
@@ -199,6 +200,10 @@ def main():
         on_skillification_prompt=_skillification_prompt,
         on_skill_revision_prompt=_skill_revision_prompt,
     )
+    goal_manager = GoalManager()
+    current_goal = goal_manager.get()
+    if current_goal:
+        agent.set_goal(current_goal.text)
 
     # resume saved session
     if args.resume:
@@ -220,7 +225,7 @@ def main():
         return
 
     # interactive REPL
-    _repl(agent, config)
+    _repl(agent, config, goal_manager)
 
 
 def _run_once(agent: Agent, prompt: str):
@@ -235,7 +240,7 @@ def _run_once(agent: Agent, prompt: str):
     print()
 
 
-def _repl(agent: Agent, config: Config):
+def _repl(agent: Agent, config: Config, goal_manager: GoalManager | None = None):
     """Interactive read-eval-print loop."""
     console.print(Panel(
         f"[bold]CoreCoder[/bold] v{__version__}\n"
@@ -285,6 +290,26 @@ def _repl(agent: Agent, config: Config):
             agent.reset()
             _always_approved.clear()
             console.print("[yellow]Conversation reset.[/yellow]")
+            continue
+        if user_input == "/goal" or user_input.startswith("/goal "):
+            goal_manager = goal_manager or GoalManager()
+            arg = user_input[6:].strip() if user_input.startswith("/goal ") else ""
+            if not arg:
+                goal = goal_manager.get()
+                if goal:
+                    console.print(f"[bold]Current goal:[/bold] {goal.text}")
+                    console.print(f"[dim]Updated at: {goal.updated_at}[/dim]")
+                else:
+                    console.print("[dim]No persistent goal set.[/dim]")
+                continue
+            if arg.lower() in {"clear", "reset", "off"}:
+                goal_manager.clear()
+                agent.set_goal(None)
+                console.print("[yellow]Persistent goal cleared.[/yellow]")
+                continue
+            goal = goal_manager.set(arg)
+            agent.set_goal(goal.text)
+            console.print(f"[green]Persistent goal set:[/green] {goal.text}")
             continue
         if user_input == "/tokens":
             p = agent.llm.total_prompt_tokens
@@ -398,6 +423,39 @@ def _repl(agent: Agent, config: Config):
                     )
             continue
 
+        if user_input == "/curator":
+            from .capability_curator import CapabilityCurator
+
+            items, report_path = CapabilityCurator().review()
+            console.print(f"[bold]Curator reviewed {len(items)} capabilities.[/bold]")
+            console.print(f"Report: [cyan]{report_path}[/cyan]")
+            for item in items[:10]:
+                console.print(
+                    f"  [cyan]{item.kind}:{item.name}[/cyan] "
+                    f"score={item.score} recommendation=[yellow]{item.recommendation}[/yellow] "
+                    f"[dim]{'; '.join(item.reasons[:3])}[/dim]"
+                )
+            continue
+
+        if user_input.startswith("/archive-skill ") or user_input.startswith("/archive-tool "):
+            from .capability_curator import archive_capability
+
+            if user_input.startswith("/archive-skill "):
+                kind = "skill"
+                name = user_input[len("/archive-skill "):].strip()
+            else:
+                kind = "tool"
+                name = user_input[len("/archive-tool "):].strip()
+            if not name:
+                console.print("[red]Missing capability name.[/red]")
+                continue
+            ok = archive_capability(kind, name)
+            if ok:
+                console.print(f"[green]Archived {kind}: {name}[/green]")
+            else:
+                console.print(f"[red]Could not archive {kind}: {name}[/red]")
+            continue
+
         if user_input == "/tools":
             tools = []
             for t in agent.tools:
@@ -441,6 +499,9 @@ def _show_help():
         "[bold]Commands:[/bold]\n"
         "  /help          Show this help\n"
         "  /reset         Clear conversation history\n"
+        "  /goal          Show persistent goal\n"
+        "  /goal <text>   Set persistent goal\n"
+        "  /goal clear    Clear persistent goal\n"
         "  /model         Show current model\n"
         "  /model <name>  Switch model mid-conversation\n"
         "  /tokens        Show token usage\n"
@@ -449,6 +510,9 @@ def _show_help():
         "  /retained      List saved retained tools\n"
         "  /capstats      Show capability growth stats\n"
         "  /trajectories  List recent task trajectory JSONL files\n"
+        "  /curator       Review capability library with rubric\n"
+        "  /archive-skill <name>  Archive a skill from active search\n"
+        "  /archive-tool <name>   Archive a retained tool from active search\n"
         "  /tools         List currently loaded tools\n"
         "  /diff          Show files modified this session\n"
         "  /save          Save session to disk\n"
